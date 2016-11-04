@@ -58,6 +58,7 @@ var startTime = Date.now()
 var elapsedTime = 0
 
 function drawFrame() {
+  console.log("drawFrame", Date.now())
   var funcStartTime = Date.now()
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, PIXEL_WIDTH*R, PIXEL_HEIGHT*R)
@@ -94,6 +95,7 @@ function drawFrame() {
     var y2w = Math.round(y2 * (win_distance / z2))
     drawLine(ctx, x1w + PIXEL_WIDTH/2, y1w + PIXEL_HEIGHT/2, x2w + PIXEL_WIDTH/2, y2w + PIXEL_HEIGHT/2)
   }
+  console.log("edges", Date.now())
 
   for (var j = 0; j < edges.length; j++) {
     var p1 = points[edges[j][0]]
@@ -102,12 +104,14 @@ function drawFrame() {
     drawLine3d(ctx, p1[0] + transformX, p1[1] + transformY, p1[2] + transformZ,
                     p2[0] + transformX, p2[1] + transformY, p2[2] + transformZ)
   }
+  console.log("points", Date.now())
 
   for (var i = 0; i < points.length; i++) {
     var p = points[i]
     ctx.fillStyle = "white"
     drawPoint3d(ctx, p[0] + transformX, p[1] + transformY, p[2] + transformZ)
   }
+  console.log("log", Date.now())
 
   frameRateDisplayCounter++
   if (frameRateDisplayCounter == 100) {
@@ -167,6 +171,17 @@ document.addEventListener('keyup', function(e) {
 })
 
 function drawLine(ctx, x1, y1, x2, y2) {
+  // TODO clamp line to be onscreen, or return if completely offscreen
+
+  // ensure line from left to right
+  if (x2 < x1) {
+    var xt = x1
+    var yt = y1
+    x1 = x2
+    y1 = y2
+    x2 = xt
+    y2 = yt
+  }
 
   // negative infinity slope case
   if (x1 == x2) {
@@ -188,17 +203,6 @@ function drawLine(ctx, x1, y1, x2, y2) {
     }
     return
   }
-
-  // ensure line from left to right
-  if (x2 < x1) {
-    var xt = x1
-    var yt = y1
-    x1 = x2
-    y1 = y2
-    x2 = xt
-    y2 = yt
-  }
-
 
   var x = x1
   var y = y1
@@ -229,16 +233,7 @@ function drawLine(ctx, x1, y1, x2, y2) {
   }
 }
 
-
 function setPixel(ctx, x, y) {
-  ctx.fillRect(x*R, y*R, R, R)
+  if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
+    ctx.fillRect(x*R, y*R, R, R)
 }
-
-
-
-
-
-
-
-
-
