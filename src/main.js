@@ -158,32 +158,61 @@ function drawFrame() {
   drawLine(ctx, 10, 60, 50, 80)
   drawLine(ctx, 10, 60, 50, 90)
 
-  // draw points
-  ctx.fillStyle = "white"
-  for (var i = 0; i < cube.length; i++) {
-    var p = cube[i]
-    // move point based on transform
-    var newP = {x: p.x + transform.x, y: p.y + transform.y, z: p.z + transform.z}
-    drawPoint3d(ctx, newP)
-  }
-
+  ctx.fillStyle = "blue"
+  
   // draw edges
   for (var j = 0; j < edges.length; j++) {
     var p1 = cube[edges[j][0]]
     var p2 = cube[edges[j][1]]
-    ctx.fillStyle = "blue"
     var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
     var newP2 = {x: p2.x + transform.x, y: p2.y + transform.y, z: p2.z + transform.z}
-    drawLine3d(ctx, newP1, newP2)
+    if (isPointInView(newP1) && isPointInView(newP2))
+      drawLine3d(ctx, newP1, newP2)
   }
 
   // update cube location
-  if (keyState.up) transform.z += 10
-  if (keyState.down) transform.z -= 10
-  if (keyState.left) transform.x -= 10
-  if (keyState.right) transform.x += 10
+  if (keyState.up) transform.z += 3
+  if (keyState.down) transform.z -= 3
+  if (keyState.left) transform.x -= 3
+  if (keyState.right) transform.x += 3
 
   window.requestAnimationFrame(drawFrame)
 }
 
 window.requestAnimationFrame(drawFrame)
+
+function cross(u, v) {
+  return [
+    u[1]*v[2] - u[2]*v[1], 
+    u[2]*v[0] - u[0]*v[2],
+    u[0]*v[1] - u[1]*v[0],
+  ]
+}
+
+// u and v are vectors with x,y,z components
+function dot(u, v) {
+  return u[0]*v[0] + u[1]*v[1] + u[2]*v[2]
+}
+
+// clockwise from bottom right
+var screen_coords = [
+  [ PIXEL_WIDTH/2 - 5,  PIXEL_HEIGHT/2 - 5, screen_dist], // bottom rt
+  [-PIXEL_WIDTH/2 + 5,  PIXEL_HEIGHT/2 - 5, screen_dist], // bottom left
+  [-PIXEL_WIDTH/2 + 5, -PIXEL_HEIGHT/2 + 5, screen_dist], // top left
+  [ PIXEL_WIDTH/2 - 5, -PIXEL_HEIGHT/2 + 5, screen_dist], // top right
+]
+
+// cross product of two points in each place
+var view_plane_normals = [
+  cross(screen_coords[0], screen_coords[1]), // bottom
+  cross(screen_coords[1], screen_coords[2]), // left
+  cross(screen_coords[2], screen_coords[3]), // top
+  cross(screen_coords[3], screen_coords[0]), // right
+]
+
+function isPointInView(p) {
+  for (var i = 0; i < view_plane_normals.length; i++)
+    if (dot([p.x, p.y, p.z], view_plane_normals[i]) < 0)
+      return false
+  return true
+}
