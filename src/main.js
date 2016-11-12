@@ -77,6 +77,29 @@ document.addEventListener('keyup', function(e) {
   if (e.keyIdentifier == "Right") keyState.right = false
 })
 
+var touches = ["right", "up", "down", "left"]
+
+for (var i = 0; i < touches.length; i++) {
+  var touch = touches[i]
+  var controlCanvas = document.getElementById(touch)
+ 
+  ;(function() {
+    var touchInner = touch
+    controlCanvas.addEventListener("touchstart", function(e) {
+      e.preventDefault()
+      keyState[touchInner] = true
+    }, false)
+  
+    controlCanvas.addEventListener("touchend", function(e) {
+      keyState[touchInner] = false
+    }, false)
+  })()
+
+  var controlCtx = controlCanvas.getContext("2d")
+  controlCtx.fillStyle = "blue"
+  controlCtx.fillRect(0, 0, 200, 200)
+}
+
 var transform = {x: 0, y: 0, z: 0}
 
 function drawLine(ctx, x1, y1, x2, y2) {
