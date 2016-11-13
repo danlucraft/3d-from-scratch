@@ -267,21 +267,32 @@ function clampLineToView(p, q) {
 
   if (p_in && q_in)
     return [p, q]
-  if (!p_in && !q_in)
+
+  var ips = []
+  for (var i = 0; i < view_plane_normals.length; i++) {
+    var ip = linePlaneIntersection(p, q, view_plane_normals[i])
+    if (ip != null)
+      ips.push(ip)
+  }
+
+  var visible_a = p_in ? p : (q_in ? q : null)
+  var visible_b = null
+
+  for (var i = 0; i < ips.length; i++) {
+    if (isPointInView(ips[i])) {
+      if (visible_a == null) {
+        visible_a = ips[i]
+      } else if (visible_b == null) {
+        visible_b = ips[i]
+        break
+      }
+    }
+  }
+
+  if (visible_a != null && visible_b != null)
+    return [visible_a, visible_b]
+  else
     return false
-
-  var in_p = p
-  var out_p = q
-  if (q_in) {
-    in_p = q
-    out_p = p
-  }
-
-  var ns = outsidePlaneNormals(out_p)
-  for (var i = 0; i < ns.length; i++) {
-    var ip = linePlaneIntersection(p, q, ns[i])
-    return [in_p, ip]
-  }
 }
 
 // takes two points that define a line and a plane normal 
@@ -289,6 +300,9 @@ function clampLineToView(p, q) {
 function linePlaneIntersection(p, q, n) {
   var v = [q.x - p.x, q.y - p.y, q.z - p.z]
   var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z)/(n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
+  if (t < 0 || t > 1)
+    return null
+
   var ip = {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
   return ip
 }
