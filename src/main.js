@@ -100,7 +100,7 @@ for (var i = 0; i < touches.length; i++) {
   controlCtx.fillRect(0, 0, 200, 200)
 }
 
-var transform = {x: 0, y: 0, z: 0}
+var transform = {x: 40, y: 0, z: -189}
 
 function drawLine(ctx, x1, y1, x2, y2) {
   // ensure line from left to right
@@ -151,6 +151,8 @@ function drawLine3d(ctx, p1, p2) {
   drawLine(ctx, x1 + PIXEL_WIDTH/2, y1 + PIXEL_HEIGHT/2, x2 + PIXEL_WIDTH/2, y2 + PIXEL_HEIGHT/2)
 }
 
+var changed = true
+
 function drawFrame() {
   // clear frame
   ctx.fillStyle = "black"
@@ -190,6 +192,8 @@ function drawFrame() {
     var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
     var newP2 = {x: p2.x + transform.x, y: p2.y + transform.y, z: p2.z + transform.z}
     var clampedLine = clampLineToView(newP1, newP2)
+    // if (changed)
+      // console.log([newP1, newP2], clampedLine)
     if (clampedLine)
       drawLine3d(ctx, clampedLine[0], clampedLine[1])
   }
@@ -202,11 +206,12 @@ function drawFrame() {
     drawPoint3d(ctx, newP1)
   }
 
+  changed = false
   // update cube location
-  if (keyState.up) transform.z += 3
-  if (keyState.down) transform.z -= 3
-  if (keyState.left) transform.x -= 3
-  if (keyState.right) transform.x += 3
+  if (keyState.up)    { changed = true; transform.z += 3 }
+  if (keyState.down)  { changed = true; transform.z -= 3 }
+  if (keyState.left)  { changed = true; transform.x -= 3 }
+  if (keyState.right) { changed = true; transform.x += 3 }
 
   window.requestAnimationFrame(drawFrame)
 }
@@ -246,7 +251,7 @@ var view_plane_normals = [
 // that define the view area
 function isPointInView(p) {
   for (var i = 0; i < view_plane_normals.length; i++)
-    if (dot([p.x, p.y, p.z], view_plane_normals[i]) < 0)
+    if (dot([p.x, p.y, p.z], view_plane_normals[i]) < -0.001)
       return false
   return true
 }
@@ -261,6 +266,8 @@ function outsidePlaneNormals(p) {
   return ns
 }
 
+// can be optimized by removing any line that is entirely on one
+// side of any plane 
 function clampLineToView(p, q) {
   var p_in = isPointInView(p)
   var q_in = isPointInView(q)
@@ -274,11 +281,13 @@ function clampLineToView(p, q) {
     if (ip != null)
       ips.push(ip)
   }
+  // console.log(ips)
 
   var visible_a = p_in ? p : (q_in ? q : null)
   var visible_b = null
 
   for (var i = 0; i < ips.length; i++) {
+    // console.log(ips[i], "isPointInVIew:", isPointInView(ips[i]), isPointInView(ips[i]+0.0003))
     if (isPointInView(ips[i])) {
       if (visible_a == null) {
         visible_a = ips[i]
@@ -300,12 +309,10 @@ function clampLineToView(p, q) {
 function linePlaneIntersection(p, q, n) {
   var v = [q.x - p.x, q.y - p.y, q.z - p.z]
   var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z)/(n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
+  // console.log("t: "+ t, "v: ", v, "p: ", p)
   if (t < 0 || t > 1)
     return null
 
   var ip = {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
   return ip
 }
-
-
-
