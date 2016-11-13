@@ -189,8 +189,17 @@ function drawFrame() {
     var p2 = cube[edges[j][1]]
     var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
     var newP2 = {x: p2.x + transform.x, y: p2.y + transform.y, z: p2.z + transform.z}
-    if (isPointInView(newP1) && isPointInView(newP2))
-      drawLine3d(ctx, newP1, newP2)
+    var clampedLine = clampLineToView(newP1, newP2)
+    if (clampedLine)
+      drawLine3d(ctx, clampedLine[0], clampedLine[1])
+  }
+
+  // draw points
+  ctx.fillStyle = "white"
+  for (var j = 0; j < cube.length; j++) {
+    var p1 = cube[j]
+    var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
+    drawPoint3d(ctx, newP1)
   }
 
   // update cube location
@@ -219,10 +228,10 @@ function dot(u, v) {
 
 // clockwise from bottom right
 var screen_coords = [
-  [ PIXEL_WIDTH/2 - 5,  PIXEL_HEIGHT/2 - 5, screen_dist], // bottom rt
-  [-PIXEL_WIDTH/2 + 5,  PIXEL_HEIGHT/2 - 5, screen_dist], // bottom left
-  [-PIXEL_WIDTH/2 + 5, -PIXEL_HEIGHT/2 + 5, screen_dist], // top left
-  [ PIXEL_WIDTH/2 - 5, -PIXEL_HEIGHT/2 + 5, screen_dist], // top right
+  [ PIXEL_WIDTH/2 - 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom rt
+  [-PIXEL_WIDTH/2 + 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom left
+  [-PIXEL_WIDTH/2 + 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top left
+  [ PIXEL_WIDTH/2 - 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top right
 ]
 
 // cross product of two points in each place
@@ -233,9 +242,56 @@ var view_plane_normals = [
   cross(screen_coords[3], screen_coords[0]), // right
 ]
 
+// returns whether the point is inside all the planes
+// that define the view area
 function isPointInView(p) {
   for (var i = 0; i < view_plane_normals.length; i++)
     if (dot([p.x, p.y, p.z], view_plane_normals[i]) < 0)
       return false
   return true
 }
+
+// returns the list of normals for the planes the point is
+// outside of
+function outsidePlaneNormals(p) {
+  var ns = []
+  for (var i = 0; i < view_plane_normals.length; i++)
+    if (dot([p.x, p.y, p.z], view_plane_normals[i]) < 0)
+      ns.push(view_plane_normals[i])
+  return ns
+}
+
+function clampLineToView(p, q) {
+  var p_in = isPointInView(p)
+  var q_in = isPointInView(q)
+
+  if (p_in && q_in)
+    return [p, q]
+  if (!p_in && !q_in)
+    return false
+
+  var in_p = p
+  var out_p = q
+  if (q_in) {
+    in_p = q
+    out_p = p
+  }
+
+  var ns = outsidePlaneNormals(out_p)
+  for (var i = 0; i < ns.length; i++) {
+    var ip = linePlaneIntersection(p, q, ns[i])
+    return [in_p, ip]
+  }
+}
+
+// takes two points that define a line and a plane normal 
+// and returns where the line intersects the plane
+function linePlaneIntersection(p, q, n) {
+  var v = [q.x - p.x, q.y - p.y, q.z - p.z]
+  var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z)/(n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
+  var ip = {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
+  return ip
+}
+
+
+
