@@ -156,6 +156,7 @@ function drawLine3d(ctx, p1, p2) {
 var changed = true
 
 function drawFrame() {
+  //try {
   // clear frame
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
@@ -194,8 +195,6 @@ function drawFrame() {
     var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
     var newP2 = {x: p2.x + transform.x, y: p2.y + transform.y, z: p2.z + transform.z}
     var clampedLine = clampLineToView(newP1, newP2)
-    // if (changed)
-      // console.log([newP1, newP2], clampedLine)
     if (clampedLine)
       drawLine3d(ctx, clampedLine[0], clampedLine[1])
   }
@@ -209,6 +208,7 @@ function drawFrame() {
   }
 
   changed = false
+
   // update cube location
   if (keyState.up)    { changed = true; transform.z += 3 }
   if (keyState.down)  { changed = true; transform.z -= 3 }
@@ -216,6 +216,12 @@ function drawFrame() {
   if (keyState.right) { changed = true; transform.x += 3 }
 
   window.requestAnimationFrame(drawFrame)
+
+  //} catch(e) {
+  //  var errorLine = document.createElement("div")
+  //  errorline.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
+  //  document.getElementById("console").appendChild(errorLine)
+  //}
 }
 
 window.requestAnimationFrame(drawFrame)
@@ -235,10 +241,10 @@ function dot(u, v) {
 
 // clockwise from bottom right
 var screen_coords = [
-  [ PIXEL_WIDTH/2 - 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom rt
-  [-PIXEL_WIDTH/2 + 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom left
-  [-PIXEL_WIDTH/2 + 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top left
-  [ PIXEL_WIDTH/2 - 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top right
+  [ pixel_WIDTH/2 - 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom rt
+  [-pixel_WIDTH/2 + 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom left
+  [-pixel_WIDTH/2 + 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top left
+  [ pixel_WIDTH/2 - 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top right
 ]
 
 // cross product of two points in each place
@@ -283,13 +289,11 @@ function clampLineToView(p, q) {
     if (ip != null)
       ips.push(ip)
   }
-  // console.log(ips)
 
   var visible_a = p_in ? p : (q_in ? q : null)
   var visible_b = null
 
   for (var i = 0; i < ips.length; i++) {
-    // console.log(ips[i], "isPointInVIew:", isPointInView(ips[i]), isPointInView(ips[i]+0.0003))
     if (isPointInView(ips[i])) {
       if (visible_a == null) {
         visible_a = ips[i]
@@ -310,11 +314,10 @@ function clampLineToView(p, q) {
 // and returns where the line intersects the plane
 function linePlaneIntersection(p, q, n) {
   var v = [q.x - p.x, q.y - p.y, q.z - p.z]
-  var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z)/(n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
-  // console.log("t: "+ t, "v: ", v, "p: ", p)
+  var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z) /
+             (n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
   if (t < 0 || t > 1)
     return null
-
-  var ip = {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
-  return ip
+  return {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
 }
+
