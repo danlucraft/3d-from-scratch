@@ -202,14 +202,13 @@ function drawFrame() {
     }
   }
 
-  // draw points
-  ctx.fillStyle = "white"
-  for (var j = 0; j < cube.length; j++) {
-    var p1 = cube[j]
-    var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
-    drawPoint3d(ctx, newP1)
-  }
-
+  // // draw points
+  // ctx.fillStyle = "white"
+  // for (var j = 0; j < cube.length; j++) {
+  //   var p1 = cube[j]
+  //   var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
+  //   drawPoint3d(ctx, newP1)
+  // }
 
   changed = false
 
@@ -245,10 +244,10 @@ function dot(u, v) {
 
 // clockwise from bottom right
 var screen_coords = [
-  [ PIXEL_WIDTH/2 - 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom rt
-  [-PIXEL_WIDTH/2 + 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom left
-  [-PIXEL_WIDTH/2 + 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top left
-  [ PIXEL_WIDTH/2 - 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top right
+  [ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
+  [-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
+  [-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
+  [ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
 ]
 
 // cross product of two points in each place
