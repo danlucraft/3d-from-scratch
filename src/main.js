@@ -155,36 +155,21 @@ function drawLine3d(ctx, p1, p2) {
 
 var changed = true
 
+var perfInfo = {
+  lastFrameTime:           Date.now(),
+  frameRateDisplayCounter: 0,
+  startTime:               Date.now(),
+  elapsedTime:             0,
+  funcStartTime:           Date.now(),
+}
+
 function drawFrame() {
-  //try {
+  try {
+  perfInfo.funcStartTime = Date.now()
+
   // clear frame
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
-
-  ctx.fillStyle = "yellow"
-  drawLine(ctx, 10, 60, 10, 100)
-  drawLine(ctx, 10, 60, 20, 100)
-  drawLine(ctx, 10, 60, 30, 100)
-  drawLine(ctx, 10, 60, 40, 100)
-  drawLine(ctx, 10, 60, 50, 100)
-
-  ctx.fillStyle = "red"
-  drawLine(ctx, 10, 60, 10, 20)
-  drawLine(ctx, 10, 60, 20, 20)
-  drawLine(ctx, 10, 60, 30, 20)
-  drawLine(ctx, 10, 60, 40, 20)
-  drawLine(ctx, 10, 60, 50, 20)
-
-  ctx.fillStyle = "green"
-  drawLine(ctx, 10, 60, 50, 30)
-  drawLine(ctx, 10, 60, 50, 40)
-  drawLine(ctx, 10, 60, 50, 50)
-  drawLine(ctx, 10, 60, 50, 60)
-
-  ctx.fillStyle = "purple"
-  drawLine(ctx, 10, 60, 50, 70)
-  drawLine(ctx, 10, 60, 50, 80)
-  drawLine(ctx, 10, 60, 50, 90)
 
   // draw edges
   for (var j = 0; j < edges.length; j++) {
@@ -199,14 +184,6 @@ function drawFrame() {
     }
   }
 
-  // // draw points
-  // ctx.fillStyle = "white"
-  // for (var j = 0; j < cube.length; j++) {
-  //   var p1 = cube[j]
-  //   var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
-  //   drawPoint3d(ctx, newP1)
-  // }
-
   changed = false
 
   // update cube location
@@ -217,14 +194,29 @@ function drawFrame() {
 
   window.requestAnimationFrame(drawFrame)
 
-  //} catch(e) {
-  //  var errorLine = document.createElement("div")
-  //  errorline.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
-  //  document.getElementById("console").appendChild(errorLine)
-  //}
+  perfInfo.elapsedTime += Date.now() - perfInfo.funcStartTime
+  perfInfo.frameRateDisplayCounter++
+  if (perfInfo.frameRateDisplayCounter == 100) {
+    var timeSinceLast = Date.now() - perfInfo.lastFrameTime
+    showPerfInfo(Math.round(1000*1000/timeSinceLast)/10,
+                 perfInfo.elapsedTime / (Date.now() - perfInfo.startTime))
+    perfInfo.lastFrameTime = Date.now()
+    perfInfo.frameRateDisplayCounter = 0
+  }
+
+  } catch(e) {
+    var errorLine = document.createElement("div")
+    errorline.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
+    document.getElementById("console").appendChild(errorLine)
+  }
 }
 
 window.requestAnimationFrame(drawFrame)
+
+function showPerfInfo(frameRate, runtimePercentage) {
+  document.getElementById("frame-rate").innerText = frameRate
+  document.getElementById("runtime-perc").innerText = Math.round(runtimePercentage*1000)/10 + "%"
+}
 
 function cross(u, v) {
   return [
