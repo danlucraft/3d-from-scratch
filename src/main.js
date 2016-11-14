@@ -82,6 +82,8 @@ var touches = ["right", "up", "down", "left"]
 for (var i = 0; i < touches.length; i++) {
   var touch = touches[i]
   var controlCanvas = document.getElementById(touch)
+  controlCanvas.width = WIN_WIDTH/5
+  controlCanvas.height = WIN_WIDTH/5
  
   ;(function() {
     var touchInner = touch
@@ -100,7 +102,7 @@ for (var i = 0; i < touches.length; i++) {
   controlCtx.fillRect(0, 0, 200, 200)
 }
 
-var transform = {x: 40, y: 0, z: -189}
+var transform = {x: 0, y: 0, z: 0}
 
 function drawLine(ctx, x1, y1, x2, y2) {
   // ensure line from left to right
