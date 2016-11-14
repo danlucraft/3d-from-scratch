@@ -186,8 +186,6 @@ function drawFrame() {
   drawLine(ctx, 10, 60, 50, 80)
   drawLine(ctx, 10, 60, 50, 90)
 
-  ctx.fillStyle = "blue"
-  
   // draw edges
   for (var j = 0; j < edges.length; j++) {
     var p1 = cube[edges[j][0]]
@@ -195,8 +193,13 @@ function drawFrame() {
     var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
     var newP2 = {x: p2.x + transform.x, y: p2.y + transform.y, z: p2.z + transform.z}
     var clampedLine = clampLineToView(newP1, newP2)
-    if (clampedLine)
+    if (clampedLine) {
+      ctx.fillStyle = "blue"
       drawLine3d(ctx, clampedLine[0], clampedLine[1])
+      ctx.fillStyle = "red"
+      drawPoint3d(ctx, clampedLine[0])
+      drawPoint3d(ctx, clampedLine[1])
+    }
   }
 
   // draw points
@@ -207,13 +210,14 @@ function drawFrame() {
     drawPoint3d(ctx, newP1)
   }
 
+
   changed = false
 
   // update cube location
-  if (keyState.up)    { changed = true; transform.z += 3 }
-  if (keyState.down)  { changed = true; transform.z -= 3 }
-  if (keyState.left)  { changed = true; transform.x -= 3 }
-  if (keyState.right) { changed = true; transform.x += 3 }
+  if (keyState.up)    { changed = true; transform.z += 2 }
+  if (keyState.down)  { changed = true; transform.z -= 2 }
+  if (keyState.left)  { changed = true; transform.x -= 2 }
+  if (keyState.right) { changed = true; transform.x += 2 }
 
   window.requestAnimationFrame(drawFrame)
 
@@ -241,10 +245,10 @@ function dot(u, v) {
 
 // clockwise from bottom right
 var screen_coords = [
-  [ pixel_WIDTH/2 - 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom rt
-  [-pixel_WIDTH/2 + 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom left
-  [-pixel_WIDTH/2 + 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top left
-  [ pixel_WIDTH/2 - 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top right
+  [ PIXEL_WIDTH/2 - 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom rt
+  [-PIXEL_WIDTH/2 + 15,  PIXEL_HEIGHT/2 - 15, screen_dist], // bottom left
+  [-PIXEL_WIDTH/2 + 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top left
+  [ PIXEL_WIDTH/2 - 15, -PIXEL_HEIGHT/2 + 15, screen_dist], // top right
 ]
 
 // cross product of two points in each place
@@ -266,16 +270,20 @@ function isPointInView(p) {
 
 // returns the list of normals for the planes the point is
 // outside of
-function outsidePlaneNormals(p) {
-  var ns = []
+function outsidePlaneNormalIndexes(p) {
+  var result = []
   for (var i = 0; i < view_plane_normals.length; i++)
     if (dot([p.x, p.y, p.z], view_plane_normals[i]) < 0)
-      ns.push(view_plane_normals[i])
-  return ns
+      result.push(i)
+  return result
 }
 
 // can be optimized by removing any line that is entirely on one
 // side of any plane 
+
+// Returns false if the line between p and q is not visible
+// at all. If it is, returns the points for the part of the
+// line that is visible.
 function clampLineToView(p, q) {
   var p_in = isPointInView(p)
   var q_in = isPointInView(q)
@@ -283,27 +291,27 @@ function clampLineToView(p, q) {
   if (p_in && q_in)
     return [p, q]
 
-  var ips = []
-  for (var i = 0; i < view_plane_normals.length; i++) {
-    var ip = linePlaneIntersection(p, q, view_plane_normals[i])
-    if (ip != null)
-      ips.push(ip)
-  }
-
+  // we need two endpoints. Include p or q if either of them
+  // is visible
   var visible_a = p_in ? p : (q_in ? q : null)
   var visible_b = null
 
-  for (var i = 0; i < ips.length; i++) {
-    if (isPointInView(ips[i])) {
+  // now find the intersections and keep going until we have two visible
+  // points
+  for (var i = 0; i < view_plane_normals.length; i++) {
+    var ip = linePlaneIntersection(p, q, view_plane_normals[i])
+    if (ip && isPointInView(ip)) {
       if (visible_a == null) {
-        visible_a = ips[i]
+        visible_a = ip
       } else if (visible_b == null) {
-        visible_b = ips[i]
+        visible_b = ip
         break
       }
     }
   }
 
+  // if we have two visible points, return them, otherwise return 
+  // false, meaning none of the line is visible.
   if (visible_a != null && visible_b != null)
     return [visible_a, visible_b]
   else
