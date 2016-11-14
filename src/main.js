@@ -196,9 +196,6 @@ function drawFrame() {
     if (clampedLine) {
       ctx.fillStyle = "blue"
       drawLine3d(ctx, clampedLine[0], clampedLine[1])
-      ctx.fillStyle = "red"
-      drawPoint3d(ctx, clampedLine[0])
-      drawPoint3d(ctx, clampedLine[1])
     }
   }
 
