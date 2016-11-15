@@ -168,8 +168,7 @@ function drawFrame() {
   perfInfo.funcStartTime = Date.now()
 
   // clear frame
-  ctx.fillStyle = "black"
-  ctx.fillRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
+  ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
   // draw edges
   for (var j = 0; j < edges.length; j++) {
