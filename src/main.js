@@ -56,6 +56,22 @@ var edges = [
   [6, 7],
 ]
 
+var cubeModel = {points: cube, edges: edges}
+
+var objects = [
+  {model: cubeModel, loc: {x: 150, y: 0, z: 0}},
+  {model: cubeModel, loc: {x: 0, y: 0, z: 0}},
+  {model: cubeModel, loc: {x: -150, y: 0, z: 0}},
+
+  {model: cubeModel, loc: {x: 150, y: -150, z: 0}},
+  {model: cubeModel, loc: {x: 0, y: -150, z: 0}},
+  {model: cubeModel, loc: {x: -150, y: -150, z: 0}},
+
+  {model: cubeModel, loc: {x: 150, y: +150, z: 0}},
+  {model: cubeModel, loc: {x: 0, y: +150, z: 0}},
+  {model: cubeModel, loc: {x: -150, y: +150, z: 0}},
+]
+
 var keyState = {
   up: false,
   down: false,
@@ -101,8 +117,6 @@ for (var i = 0; i < touches.length; i++) {
   controlCtx.fillStyle = "blue"
   controlCtx.fillRect(0, 0, 200, 200)
 }
-
-var transform = {x: 0, y: 0, z: 0}
 
 function drawLine(ctx, x1, y1, x2, y2) {
   // ensure line from left to right
@@ -164,32 +178,37 @@ var perfInfo = {
 }
 
 function drawFrame() {
-  try {
+  // try {
   perfInfo.funcStartTime = Date.now()
 
   // clear frame
   ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
   // draw edges
-  for (var j = 0; j < edges.length; j++) {
-    var p1 = cube[edges[j][0]]
-    var p2 = cube[edges[j][1]]
-    var newP1 = {x: p1.x + transform.x, y: p1.y + transform.y, z: p1.z + transform.z}
-    var newP2 = {x: p2.x + transform.x, y: p2.y + transform.y, z: p2.z + transform.z}
-    var clampedLine = clampLineToView(newP1, newP2)
-    if (clampedLine) {
-      ctx.fillStyle = "blue"
-      drawLine3d(ctx, clampedLine[0], clampedLine[1])
+  for (var i = 0; i < objects.length; i++) {
+    var object = objects[i]
+    for (var j = 0; j < object.model.edges.length; j++) {
+      var p1 = object.model.points[object.model.edges[j][0]]
+      var p2 = object.model.points[object.model.edges[j][1]]
+      var newP1 = {x: p1.x + object.loc.x, y: p1.y + object.loc.y, z: p1.z + object.loc.z}
+      var newP2 = {x: p2.x + object.loc.x, y: p2.y + object.loc.y, z: p2.z + object.loc.z}
+      var clampedLine = clampLineToView(newP1, newP2)
+      if (clampedLine) {
+        ctx.fillStyle = "blue"
+        drawLine3d(ctx, clampedLine[0], clampedLine[1])
+      }
     }
   }
 
   changed = false
 
   // update cube location
-  if (keyState.up)    { changed = true; transform.z += 2 }
-  if (keyState.down)  { changed = true; transform.z -= 2 }
-  if (keyState.left)  { changed = true; transform.x -= 2 }
-  if (keyState.right) { changed = true; transform.x += 2 }
+  for (var i = 0; i < objects.length; i++) {
+    if (keyState.up)    { changed = true; objects[i].loc.z += 4 }
+    if (keyState.down)  { changed = true; objects[i].loc.z -= 4 }
+    if (keyState.left)  { changed = true; objects[i].loc.x -= 4 }
+    if (keyState.right) { changed = true; objects[i].loc.x += 4 }
+  }
 
   window.requestAnimationFrame(drawFrame)
 
@@ -203,11 +222,11 @@ function drawFrame() {
     perfInfo.frameRateDisplayCounter = 0
   }
 
-  } catch(e) {
-    var errorLine = document.createElement("div")
-    errorline.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
-    document.getElementById("console").appendChild(errorLine)
-  }
+  // } catch(e) {
+  //   var errorLine = document.createElement("div")
+  //   errorLine.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
+  //   document.getElementById("console").appendChild(errorLine)
+  // }
 }
 
 window.requestAnimationFrame(drawFrame)
