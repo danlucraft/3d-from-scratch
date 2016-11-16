@@ -19,6 +19,7 @@ console.log("screen info", [PIXEL_WIDTH, PIXEL_HEIGHT], [WIN_WIDTH, WIN_HEIGHT],
 
 var screen_dist = 100
 var camera_location = {x:0, y:0, z:-200}
+var camera_orientation = {pitch: 0, yaw: 0, roll: 0.4}
 
 // clockwise from bottom right
 var screen_vectors = [
@@ -181,7 +182,12 @@ function drawLine3d(ctx, p1, p2) {
   var y1 = Math.round((p1.y-camera_location.y) * (screen_dist / (p1.z-camera_location.z)))
   var x2 = Math.round((p2.x-camera_location.x) * (screen_dist / (p2.z-camera_location.z)))
   var y2 = Math.round((p2.y-camera_location.y) * (screen_dist / (p2.z-camera_location.z)))
-  drawLine(ctx, x1 + PIXEL_WIDTH/2, y1 + PIXEL_HEIGHT/2, x2 + PIXEL_WIDTH/2, y2 + PIXEL_HEIGHT/2)
+  var r = camera_orientation.roll
+  drawLine(ctx, 
+    x1*Math.cos(r) - y1*Math.sin(r) + PIXEL_WIDTH/2, 
+    y1*Math.cos(r) + x1*Math.sin(r) + PIXEL_HEIGHT/2,
+    x2*Math.cos(r) - y2*Math.sin(r) + PIXEL_WIDTH/2,
+    y2*Math.cos(r) + x2*Math.sin(r) + PIXEL_HEIGHT/2)
 }
 
 var changed = true
@@ -205,6 +211,21 @@ function drawFrame() {
 		[ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
 	]
 
+  // apply roll
+  console.log(screen_vectors)
+  var h = Math.sqrt(screen_vectors[0][0]*screen_vectors[0][0] + screen_vectors[0][1]*screen_vectors[0][1])
+  for (var i = 0; i < screen_vectors.length; i++) {
+    var v = screen_vectors[i]
+    var r = camera_orientation.roll
+    // console.log(1, v[0], v[1])
+    var x = v[0]
+    var y = v[1]
+    v[0] = x*Math.cos(r) - y*Math.sin(r)
+    v[1] = y*Math.cos(r) + x*Math.sin(r)
+    // console.log(2, v[0], v[1])
+  }
+  console.log(screen_vectors)
+
 	view_plane_normals = [
 		cross(screen_vectors[0], screen_vectors[1]), // bottom
 		cross(screen_vectors[1], screen_vectors[2]), // left
@@ -212,7 +233,7 @@ function drawFrame() {
 		cross(screen_vectors[3], screen_vectors[0]), // right
 	]
 
-  document.getElementById("debug").innerHTML = JSON.stringify(camera_location)
+  document.getElementById("debug").innerHTML = JSON.stringify([camera_location, camera_orientation])
   document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
 
   // clear frame
@@ -240,8 +261,8 @@ function drawFrame() {
   // update camera location
 	if (keyState.up)    { changed = true; camera_location.z += 8 }
 	if (keyState.down)  { changed = true; camera_location.z -= 8 }
-	if (keyState.left)  { changed = true; camera_location.x -= 8 }
-	if (keyState.right) { changed = true; camera_location.x += 8 }
+	if (keyState.left)  { changed = true; camera_orientation.roll -= 0.01 }
+	if (keyState.right) { changed = true; camera_orientation.roll += 0.01 }
 
   window.requestAnimationFrame(drawFrame)
 
