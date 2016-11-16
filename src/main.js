@@ -15,61 +15,66 @@ canvas.height = PIXEL_HEIGHT * pixel_size
 
 var ctx = canvas.getContext("2d")
 
-function setPixel(ctx, x, y) {
-  if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
-    ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
-}
-
 console.log("screen info", [PIXEL_WIDTH, PIXEL_HEIGHT], [WIN_WIDTH, WIN_HEIGHT], [ratio_width, ratio_height], pixel_size, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
 var screen_dist = 100
+var camera_location = {x:0, y:0, z:0}
 
-function drawPoint3d(ctx, p) {
-  var x = Math.round(p.x * (screen_dist / p.z))
-  var y = Math.round(p.y * (screen_dist / p.z))
-  setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
+// clockwise from bottom right
+var screen_coords = [
+  [ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
+  [-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
+  [-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
+  [ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
+]
+
+// cross product of two points in each place
+var view_plane_normals = [
+  cross(screen_coords[0], screen_coords[1]), // bottom
+  cross(screen_coords[1], screen_coords[2]), // left
+  cross(screen_coords[2], screen_coords[3]), // top
+  cross(screen_coords[3], screen_coords[0]), // right
+]
+
+var cubeModel = {
+  points: [
+	  { x: 50,  y: 50,  z: 0},
+	  { x: 50,  y: 50,  z: -50},
+	  { x: 50,  y: -50, z: 50},
+	  { x: -50, y: 50,  z: 50},
+	  { x: 50,  y: -50, z: -50},
+	  { x: -50, y: 50,  z: -50},
+	  { x: -50, y: -50, z: 50}, 
+	  { x: -50, y: -50, z: -50}
+	],
+  edges: [
+	  [0, 1],
+	  [0, 2],
+	  [0, 3],
+	  [1, 4],
+	  [1, 5],
+	  [2, 4],
+	  [2, 6],
+	  [3, 5],
+	  [3, 6],
+	  [4, 7],
+	  [5, 7],
+	  [6, 7],
+	]
 }
 
-var cube = [
-  { x: 50,  y: 50,  z: 250},
-  { x: 50,  y: 50,  z: 150},
-  { x: 50,  y: -50, z: 250},
-  { x: -50, y: 50,  z: 250},
-  { x: 50,  y: -50, z: 150},
-  { x: -50, y: 50,  z: 150},
-  { x: -50, y: -50, z: 250}, 
-  { x: -50, y: -50, z: 150}
-]
-
-var edges = [
-  [0, 1],
-  [0, 2],
-  [0, 3],
-  [1, 4],
-  [1, 5],
-  [2, 4],
-  [2, 6],
-  [3, 5],
-  [3, 6],
-  [4, 7],
-  [5, 7],
-  [6, 7],
-]
-
-var cubeModel = {points: cube, edges: edges}
-
 var objects = [
-  {model: cubeModel, loc: {x: 150, y: 0, z: 0}},
-  {model: cubeModel, loc: {x: 0, y: 0, z: 0}},
-  {model: cubeModel, loc: {x: -150, y: 0, z: 0}},
+  {model: cubeModel, loc: {x: 150, y: 0, z: 200}},
+  {model: cubeModel, loc: {x: 0, y: 0, z: 200}},
+  {model: cubeModel, loc: {x: -150, y: 0, z: 200}},
 
-  {model: cubeModel, loc: {x: 150, y: -150, z: 0}},
-  {model: cubeModel, loc: {x: 0, y: -150, z: 0}},
-  {model: cubeModel, loc: {x: -150, y: -150, z: 0}},
+  {model: cubeModel, loc: {x: 150, y: -150, z: 200}},
+  {model: cubeModel, loc: {x: 0, y: -150, z: 200}},
+  {model: cubeModel, loc: {x: -150, y: -150, z: 200}},
 
-  {model: cubeModel, loc: {x: 150, y: +150, z: 0}},
-  {model: cubeModel, loc: {x: 0, y: +150, z: 0}},
-  {model: cubeModel, loc: {x: -150, y: +150, z: 0}},
+  {model: cubeModel, loc: {x: 150, y: +150, z: 200}},
+  {model: cubeModel, loc: {x: 0, y: +150, z: 200}},
+  {model: cubeModel, loc: {x: -150, y: +150, z: 200}},
 ]
 
 var keyState = {
@@ -116,6 +121,17 @@ for (var i = 0; i < touches.length; i++) {
   var controlCtx = controlCanvas.getContext("2d")
   controlCtx.fillStyle = "blue"
   controlCtx.fillRect(0, 0, 200, 200)
+}
+
+function setPixel(ctx, x, y) {
+  if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
+    ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
+}
+
+function drawPoint3d(ctx, p) {
+  var x = Math.round(p.x * (screen_dist / p.z))
+  var y = Math.round(p.y * (screen_dist / p.z))
+  setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
 }
 
 function drawLine(ctx, x1, y1, x2, y2) {
@@ -178,7 +194,7 @@ var perfInfo = {
 }
 
 function drawFrame() {
-  // try {
+  try {
   perfInfo.funcStartTime = Date.now()
 
   // clear frame
@@ -190,9 +206,7 @@ function drawFrame() {
     for (var j = 0; j < object.model.edges.length; j++) {
       var p1 = object.model.points[object.model.edges[j][0]]
       var p2 = object.model.points[object.model.edges[j][1]]
-      var newP1 = {x: p1.x + object.loc.x, y: p1.y + object.loc.y, z: p1.z + object.loc.z}
-      var newP2 = {x: p2.x + object.loc.x, y: p2.y + object.loc.y, z: p2.z + object.loc.z}
-      var clampedLine = clampLineToView(newP1, newP2)
+      var clampedLine = clampLineToView(p1, p2)
       if (clampedLine) {
         ctx.fillStyle = "blue"
         drawLine3d(ctx, clampedLine[0], clampedLine[1])
@@ -202,13 +216,34 @@ function drawFrame() {
 
   changed = false
 
-  // update cube location
-  for (var i = 0; i < objects.length; i++) {
-    if (keyState.up)    { changed = true; objects[i].loc.z += 4 }
-    if (keyState.down)  { changed = true; objects[i].loc.z -= 4 }
-    if (keyState.left)  { changed = true; objects[i].loc.x -= 4 }
-    if (keyState.right) { changed = true; objects[i].loc.x += 4 }
-  }
+  // update camera location
+	if (keyState.up)    { changed = true; camera_location.z += 4 }
+	if (keyState.down)  { changed = true; camera_location.z -= 4 }
+	if (keyState.left)  { changed = true; camera_location.x -= 4 }
+	if (keyState.right) { changed = true; camera_location.x += 4 }
+
+	screen_coords = [
+		[ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
+		[-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
+		[-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
+		[ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
+	]
+
+//	var screen_camera_vectors = []
+//	for (var i = 0; i < screen_coords.length; i++) {
+//	  screen_camera_vectors.push(
+//		  [screen_coords[0]
+//	}
+
+	view_plane_normals = [
+		cross(screen_coords[0], screen_coords[1]), // bottom
+		cross(screen_coords[1], screen_coords[2]), // left
+		cross(screen_coords[2], screen_coords[3]), // top
+		cross(screen_coords[3], screen_coords[0]), // right
+	]
+
+  document.getElementById("debug").innerHTML = JSON.stringify(camera_location)
+  document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
 
   window.requestAnimationFrame(drawFrame)
 
@@ -222,11 +257,11 @@ function drawFrame() {
     perfInfo.frameRateDisplayCounter = 0
   }
 
-  // } catch(e) {
-  //   var errorLine = document.createElement("div")
-  //   errorLine.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
-  //   document.getElementById("console").appendChild(errorLine)
-  // }
+  } catch(e) {
+    var errorLine = document.createElement("div")
+    errorLine.innerHTML = "<div class=error>" + e.fileName + ":" + e.lineNumber + ": " + e.message + "</div>"
+    document.getElementById("console").appendChild(errorLine)
+  }
 }
 
 window.requestAnimationFrame(drawFrame)
@@ -249,43 +284,17 @@ function dot(u, v) {
   return u[0]*v[0] + u[1]*v[1] + u[2]*v[2]
 }
 
-// clockwise from bottom right
-var screen_coords = [
-  [ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
-  [-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
-  [-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
-  [ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
-]
-
-// cross product of two points in each place
-var view_plane_normals = [
-  cross(screen_coords[0], screen_coords[1]), // bottom
-  cross(screen_coords[1], screen_coords[2]), // left
-  cross(screen_coords[2], screen_coords[3]), // top
-  cross(screen_coords[3], screen_coords[0]), // right
-]
-
 // returns whether the point is inside all the planes
 // that define the view area
 function isPointInView(p) {
   for (var i = 0; i < view_plane_normals.length; i++)
-    if (dot([p.x, p.y, p.z], view_plane_normals[i]) < -0.001)
+    if (dot([p.x-camera_location.x, 
+					   p.y-camera_location.y, 
+						 p.z-camera_location.z], 
+						 view_plane_normals[i]) < -0.001)
       return false
   return true
 }
-
-// returns the list of normals for the planes the point is
-// outside of
-function outsidePlaneNormalIndexes(p) {
-  var result = []
-  for (var i = 0; i < view_plane_normals.length; i++)
-    if (dot([p.x, p.y, p.z], view_plane_normals[i]) < 0)
-      result.push(i)
-  return result
-}
-
-// can be optimized by removing any line that is entirely on one
-// side of any plane 
 
 // Returns false if the line between p and q is not visible
 // at all. If it is, returns the points for the part of the
@@ -294,8 +303,9 @@ function clampLineToView(p, q) {
   var p_in = isPointInView(p)
   var q_in = isPointInView(q)
 
-  if (p_in && q_in)
+  if (p_in && q_in) {
     return [p, q]
+	}
 
   // we need two endpoints. Include p or q if either of them
   // is visible
