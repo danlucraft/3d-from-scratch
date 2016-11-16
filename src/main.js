@@ -64,8 +64,9 @@ var cubeModel = {
 }
 
 var objects = [
+  {model: cubeModel, loc: {x: 0, y: 0, z: 400}},
+  
   {model: cubeModel, loc: {x: 150, y: 0, z: 500}},
-  {model: cubeModel, loc: {x: 0, y: 0, z: 500}},
   {model: cubeModel, loc: {x: -150, y: 0, z: 500}},
 
   {model: cubeModel, loc: {x: 150, y: -150, z: 500}},
@@ -312,7 +313,7 @@ function clampLineToView(p, q) {
   // now find the intersections and keep going until we have two visible
   // points
   for (var i = 0; i < view_plane_normals.length; i++) {
-    var ip = linePlaneIntersection(p, q, view_plane_normals[i])
+    var ip = linePlaneIntersection(p, q, view_plane_normals[i], camera_location)
     if (ip && isPointInView(ip)) {
       if (visible_a == null) {
         visible_a = ip
@@ -331,12 +332,13 @@ function clampLineToView(p, q) {
     return false
 }
 
-// takes two points that define a line and a plane normal 
-// and returns where the line intersects the plane
-function linePlaneIntersection(p, q, n) {
+// takes two points that define a line and a plane normal (n) plus point 
+// in plane (c) and returns where the line intersects the plane
+function linePlaneIntersection(p, q, n, c) {
   var v = [q.x - p.x, q.y - p.y, q.z - p.z]
-  var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z) /
-             (n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
+  var w = [c.x - p.x, c.y - p.y, c.z - p.z]
+  var t = (n[0]*w[0] + n[1]*w[1] + n[2]*w[2]) /
+          (n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
   if (t < 0 || t > 1)
     return null
   return {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
