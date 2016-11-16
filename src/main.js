@@ -18,10 +18,10 @@ var ctx = canvas.getContext("2d")
 console.log("screen info", [PIXEL_WIDTH, PIXEL_HEIGHT], [WIN_WIDTH, WIN_HEIGHT], [ratio_width, ratio_height], pixel_size, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
 var screen_dist = 100
-var camera_location = {x:0, y:0, z:0}
+var camera_location = {x:0, y:0, z:-200}
 
 // clockwise from bottom right
-var screen_coords = [
+var screen_vectors = [
   [ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
   [-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
   [-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
@@ -30,15 +30,15 @@ var screen_coords = [
 
 // cross product of two points in each place
 var view_plane_normals = [
-  cross(screen_coords[0], screen_coords[1]), // bottom
-  cross(screen_coords[1], screen_coords[2]), // left
-  cross(screen_coords[2], screen_coords[3]), // top
-  cross(screen_coords[3], screen_coords[0]), // right
+  cross(screen_vectors[0], screen_vectors[1]), // bottom
+  cross(screen_vectors[1], screen_vectors[2]), // left
+  cross(screen_vectors[2], screen_vectors[3]), // top
+  cross(screen_vectors[3], screen_vectors[0]), // right
 ]
 
 var cubeModel = {
   points: [
-	  { x: 50,  y: 50,  z: 0},
+	  { x: 50,  y: 50,  z: 50},
 	  { x: 50,  y: 50,  z: -50},
 	  { x: 50,  y: -50, z: 50},
 	  { x: -50, y: 50,  z: 50},
@@ -64,17 +64,17 @@ var cubeModel = {
 }
 
 var objects = [
-  {model: cubeModel, loc: {x: 150, y: 0, z: 200}},
-  {model: cubeModel, loc: {x: 0, y: 0, z: 200}},
-  {model: cubeModel, loc: {x: -150, y: 0, z: 200}},
+  {model: cubeModel, loc: {x: 150, y: 0, z: 500}},
+  {model: cubeModel, loc: {x: 0, y: 0, z: 500}},
+  {model: cubeModel, loc: {x: -150, y: 0, z: 500}},
 
-  {model: cubeModel, loc: {x: 150, y: -150, z: 200}},
-  {model: cubeModel, loc: {x: 0, y: -150, z: 200}},
-  {model: cubeModel, loc: {x: -150, y: -150, z: 200}},
+  {model: cubeModel, loc: {x: 150, y: -150, z: 500}},
+  {model: cubeModel, loc: {x: 0, y: -150, z: 500}},
+  {model: cubeModel, loc: {x: -150, y: -150, z: 500}},
 
-  {model: cubeModel, loc: {x: 150, y: +150, z: 200}},
-  {model: cubeModel, loc: {x: 0, y: +150, z: 200}},
-  {model: cubeModel, loc: {x: -150, y: +150, z: 200}},
+  {model: cubeModel, loc: {x: 150, y: +150, z: 500}},
+  {model: cubeModel, loc: {x: 0, y: +150, z: 500}},
+  {model: cubeModel, loc: {x: -150, y: +150, z: 500}},
 ]
 
 var keyState = {
@@ -129,8 +129,8 @@ function setPixel(ctx, x, y) {
 }
 
 function drawPoint3d(ctx, p) {
-  var x = Math.round(p.x * (screen_dist / p.z))
-  var y = Math.round(p.y * (screen_dist / p.z))
+  var x = Math.round((p.x-camera_location.x) * (screen_dist / (p.z-camera_location.z)))
+  var y = Math.round((p.y-camera_location.y) * (screen_dist / (p.z-camera_location.z)))
   setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
 }
 
@@ -176,10 +176,10 @@ function drawLine(ctx, x1, y1, x2, y2) {
 }
 
 function drawLine3d(ctx, p1, p2) {
-  var x1 = Math.round(p1.x * (screen_dist / p1.z))
-  var y1 = Math.round(p1.y * (screen_dist / p1.z))
-  var x2 = Math.round(p2.x * (screen_dist / p2.z))
-  var y2 = Math.round(p2.y * (screen_dist / p2.z))
+  var x1 = Math.round((p1.x-camera_location.x) * (screen_dist / (p1.z-camera_location.z)))
+  var y1 = Math.round((p1.y-camera_location.y) * (screen_dist / (p1.z-camera_location.z)))
+  var x2 = Math.round((p2.x-camera_location.x) * (screen_dist / (p2.z-camera_location.z)))
+  var y2 = Math.round((p2.y-camera_location.y) * (screen_dist / (p2.z-camera_location.z)))
   drawLine(ctx, x1 + PIXEL_WIDTH/2, y1 + PIXEL_HEIGHT/2, x2 + PIXEL_WIDTH/2, y2 + PIXEL_HEIGHT/2)
 }
 
@@ -197,6 +197,23 @@ function drawFrame() {
   try {
   perfInfo.funcStartTime = Date.now()
 
+	screen_vectors = [
+		[ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
+		[-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
+		[-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
+		[ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
+	]
+
+	view_plane_normals = [
+		cross(screen_vectors[0], screen_vectors[1]), // bottom
+		cross(screen_vectors[1], screen_vectors[2]), // left
+		cross(screen_vectors[2], screen_vectors[3]), // top
+		cross(screen_vectors[3], screen_vectors[0]), // right
+	]
+
+  document.getElementById("debug").innerHTML = JSON.stringify(camera_location)
+  document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
+
   // clear frame
   ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
@@ -206,9 +223,12 @@ function drawFrame() {
     for (var j = 0; j < object.model.edges.length; j++) {
       var p1 = object.model.points[object.model.edges[j][0]]
       var p2 = object.model.points[object.model.edges[j][1]]
-      var clampedLine = clampLineToView(p1, p2)
+      var loc = object.loc
+      var newP1 = {x: p1.x + loc.x, y: p1.y + loc.y, z: p1.z + loc.z}
+      var newP2 = {x: p2.x + loc.x, y: p2.y + loc.y, z: p2.z + loc.z}
+      var clampedLine = clampLineToView(newP1, newP2)
       if (clampedLine) {
-        ctx.fillStyle = "blue"
+        ctx.fillStyle = "yellow"
         drawLine3d(ctx, clampedLine[0], clampedLine[1])
       }
     }
@@ -217,33 +237,10 @@ function drawFrame() {
   changed = false
 
   // update camera location
-	if (keyState.up)    { changed = true; camera_location.z += 4 }
-	if (keyState.down)  { changed = true; camera_location.z -= 4 }
-	if (keyState.left)  { changed = true; camera_location.x -= 4 }
-	if (keyState.right) { changed = true; camera_location.x += 4 }
-
-	screen_coords = [
-		[ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
-		[-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
-		[-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
-		[ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
-	]
-
-//	var screen_camera_vectors = []
-//	for (var i = 0; i < screen_coords.length; i++) {
-//	  screen_camera_vectors.push(
-//		  [screen_coords[0]
-//	}
-
-	view_plane_normals = [
-		cross(screen_coords[0], screen_coords[1]), // bottom
-		cross(screen_coords[1], screen_coords[2]), // left
-		cross(screen_coords[2], screen_coords[3]), // top
-		cross(screen_coords[3], screen_coords[0]), // right
-	]
-
-  document.getElementById("debug").innerHTML = JSON.stringify(camera_location)
-  document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
+	if (keyState.up)    { changed = true; camera_location.z += 8 }
+	if (keyState.down)  { changed = true; camera_location.z -= 8 }
+	if (keyState.left)  { changed = true; camera_location.x -= 8 }
+	if (keyState.right) { changed = true; camera_location.x += 8 }
 
   window.requestAnimationFrame(drawFrame)
 
