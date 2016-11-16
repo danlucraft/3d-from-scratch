@@ -18,7 +18,7 @@ var ctx = canvas.getContext("2d")
 console.log("screen info", [PIXEL_WIDTH, PIXEL_HEIGHT], [WIN_WIDTH, WIN_HEIGHT], [ratio_width, ratio_height], pixel_size, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
 var screen_dist = 100
-var camera_location = {x:0, y:0, z:-200}
+var camera_location = {x:0, y:0, z:200}
 var camera_orientation = {pitch: 0, yaw: 0, roll: 0.4}
 
 // clockwise from bottom right
@@ -79,52 +79,6 @@ var objects = [
   {model: cubeModel, loc: {x: -150, y: +150, z: 500}},
 ]
 
-var keyState = {
-  up: false,
-  down: false,
-  left: false,
-  right: false,
-}
-
-document.addEventListener('keydown', function(e) {
-  if (e.keyIdentifier == "Up")    keyState.up = true
-  if (e.keyIdentifier == "Down")  keyState.down = true
-  if (e.keyIdentifier == "Left")  keyState.left = true
-  if (e.keyIdentifier == "Right")  keyState.right = true
-})
-
-document.addEventListener('keyup', function(e) {
-  if (e.keyIdentifier == "Up")    keyState.up = false
-  if (e.keyIdentifier == "Down")  keyState.down = false
-  if (e.keyIdentifier == "Left")  keyState.left = false
-  if (e.keyIdentifier == "Right") keyState.right = false
-})
-
-var touches = ["right", "up", "down", "left"]
-
-for (var i = 0; i < touches.length; i++) {
-  var touch = touches[i]
-  var controlCanvas = document.getElementById(touch)
-  controlCanvas.width = WIN_WIDTH/5
-  controlCanvas.height = WIN_WIDTH/5
- 
-  ;(function() {
-    var touchInner = touch
-    controlCanvas.addEventListener("touchstart", function(e) {
-      e.preventDefault()
-      keyState[touchInner] = true
-    }, false)
-  
-    controlCanvas.addEventListener("touchend", function(e) {
-      keyState[touchInner] = false
-    }, false)
-  })()
-
-  var controlCtx = controlCanvas.getContext("2d")
-  controlCtx.fillStyle = "blue"
-  controlCtx.fillRect(0, 0, 200, 200)
-}
-
 function setPixel(ctx, x, y) {
   if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
     ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
@@ -182,7 +136,7 @@ function drawLine3d(ctx, p1, p2) {
   var y1 = Math.round((p1.y-camera_location.y) * (screen_dist / (p1.z-camera_location.z)))
   var x2 = Math.round((p2.x-camera_location.x) * (screen_dist / (p2.z-camera_location.z)))
   var y2 = Math.round((p2.y-camera_location.y) * (screen_dist / (p2.z-camera_location.z)))
-  var r = camera_orientation.roll
+  var r = -camera_orientation.roll
   drawLine(ctx, 
     x1*Math.cos(r) - y1*Math.sin(r) + PIXEL_WIDTH/2, 
     y1*Math.cos(r) + x1*Math.sin(r) + PIXEL_HEIGHT/2,
@@ -212,19 +166,15 @@ function drawFrame() {
 	]
 
   // apply roll
-  console.log(screen_vectors)
   var h = Math.sqrt(screen_vectors[0][0]*screen_vectors[0][0] + screen_vectors[0][1]*screen_vectors[0][1])
   for (var i = 0; i < screen_vectors.length; i++) {
     var v = screen_vectors[i]
     var r = camera_orientation.roll
-    // console.log(1, v[0], v[1])
     var x = v[0]
     var y = v[1]
     v[0] = x*Math.cos(r) - y*Math.sin(r)
     v[1] = y*Math.cos(r) + x*Math.sin(r)
-    // console.log(2, v[0], v[1])
   }
-  console.log(screen_vectors)
 
 	view_plane_normals = [
 		cross(screen_vectors[0], screen_vectors[1]), // bottom
@@ -234,7 +184,7 @@ function drawFrame() {
 	]
 
   document.getElementById("debug").innerHTML = JSON.stringify([camera_location, camera_orientation])
-  document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
+  // document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
 
   // clear frame
   ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
@@ -365,3 +315,49 @@ function linePlaneIntersection(p, q, n, c) {
   return {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
 }
 
+
+var keyState = {
+  up: false,
+  down: false,
+  left: false,
+  right: false,
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.keyIdentifier == "Up")    keyState.up = true
+  if (e.keyIdentifier == "Down")  keyState.down = true
+  if (e.keyIdentifier == "Left")  keyState.left = true
+  if (e.keyIdentifier == "Right")  keyState.right = true
+})
+
+document.addEventListener('keyup', function(e) {
+  if (e.keyIdentifier == "Up")    keyState.up = false
+  if (e.keyIdentifier == "Down")  keyState.down = false
+  if (e.keyIdentifier == "Left")  keyState.left = false
+  if (e.keyIdentifier == "Right") keyState.right = false
+})
+
+var touches = ["right", "up", "down", "left"]
+
+for (var i = 0; i < touches.length; i++) {
+  var touch = touches[i]
+  var controlCanvas = document.getElementById(touch)
+  controlCanvas.width = WIN_WIDTH/5
+  controlCanvas.height = WIN_WIDTH/5
+ 
+  ;(function() {
+    var touchInner = touch
+    controlCanvas.addEventListener("touchstart", function(e) {
+      e.preventDefault()
+      keyState[touchInner] = true
+    }, false)
+  
+    controlCanvas.addEventListener("touchend", function(e) {
+      keyState[touchInner] = false
+    }, false)
+  })()
+
+  var controlCtx = controlCanvas.getContext("2d")
+  controlCtx.fillStyle = "blue"
+  controlCtx.fillRect(0, 0, 200, 200)
+}
