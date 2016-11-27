@@ -1,6 +1,6 @@
 
-var PIXEL_WIDTH  = 320
-var PIXEL_HEIGHT = 240
+var PIXEL_WIDTH  = 160
+var PIXEL_HEIGHT = 120
 
 var WIN_WIDTH  = window.innerWidth
 var WIN_HEIGHT = window.innerHeight
@@ -8,6 +8,14 @@ var WIN_HEIGHT = window.innerHeight
 var ratio_width  = WIN_WIDTH / PIXEL_WIDTH
 var ratio_height = WIN_HEIGHT / PIXEL_HEIGHT
 var pixel_size = Math.floor(Math.min(ratio_width, ratio_height))
+var scaleX = pixel_size
+var scaleY = pixel_size
+
+//var scaleToFit = Math.min(scaleX, scaleY);
+//var scaleToCover = Math.max(scaleX, scaleY);
+//var stage = document.getElementById("stage")
+//stage.style.transformOrigin = "0 0"; //scale from top left
+//stage.style.transform = "scale(" + scaleToFit + ")";
 
 var canvas = document.getElementById("canvas")
 canvas.width = PIXEL_WIDTH * pixel_size
@@ -18,7 +26,7 @@ var ctx = canvas.getContext("2d")
 console.log("screen info", [PIXEL_WIDTH, PIXEL_HEIGHT], [WIN_WIDTH, WIN_HEIGHT], [ratio_width, ratio_height], pixel_size, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
 var screen_dist = 100
-var camera_location = {x:0, y:0, z:200}
+var camera_location = {x:0, y:0, z:0}
 var camera_orientation = {pitch: 0, yaw: 0, roll: 0.4}
 
 // clockwise from bottom right
@@ -70,13 +78,29 @@ var objects = [
   {model: cubeModel, loc: {x: 150, y: 0, z: 500}},
   {model: cubeModel, loc: {x: -150, y: 0, z: 500}},
 
+  //{model: cubeModel, loc: {x: 300, y: -300, z: 500}},
+  //{model: cubeModel, loc: {x: 150, y: -300, z: 500}},
+  //{model: cubeModel, loc: {x: 0, y: -300, z: 500}},
+  //{model: cubeModel, loc: {x: -150, y: -300, z: 500}},
+  //{model: cubeModel, loc: {x: -300, y: -300, z: 500}},
+
+  //{model: cubeModel, loc: {x: 300, y: -150, z: 500}},
   {model: cubeModel, loc: {x: 150, y: -150, z: 500}},
   {model: cubeModel, loc: {x: 0, y: -150, z: 500}},
   {model: cubeModel, loc: {x: -150, y: -150, z: 500}},
+  //{model: cubeModel, loc: {x: -300, y: -150, z: 500}},
 
+  //{model: cubeModel, loc: {x: 300, y: +150, z: 500}},
   {model: cubeModel, loc: {x: 150, y: +150, z: 500}},
   {model: cubeModel, loc: {x: 0, y: +150, z: 500}},
   {model: cubeModel, loc: {x: -150, y: +150, z: 500}},
+  //{model: cubeModel, loc: {x: -300, y: +150, z: 500}},
+
+  //{model: cubeModel, loc: {x: 300, y: +300, z: 500}},
+  //{model: cubeModel, loc: {x: 150, y: +300, z: 500}},
+  //{model: cubeModel, loc: {x: 0, y: +300, z: 500}},
+  //{model: cubeModel, loc: {x: -150, y: +300, z: 500}},
+  //{model: cubeModel, loc: {x: -300, y: +300, z: 500}},
 ]
 
 function setPixel(ctx, x, y) {
@@ -88,6 +112,10 @@ function drawPoint3d(ctx, p) {
   var x = Math.round((p.x-camera_location.x) * (screen_dist / (p.z-camera_location.z)))
   var y = Math.round((p.y-camera_location.y) * (screen_dist / (p.z-camera_location.z)))
   setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
+}
+
+function drawVertLine(ctx, x, y1, y2) {
+  ctx.fillRect(x*pixel_size, y1*pixel_size, pixel_size, (y2-y1 + 1)*pixel_size)
 }
 
 function drawLine(ctx, x1, y1, x2, y2) {
