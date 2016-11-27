@@ -78,29 +78,29 @@ var objects = [
   {model: cubeModel, loc: {x: 150, y: 0, z: 500}},
   {model: cubeModel, loc: {x: -150, y: 0, z: 500}},
 
-  //{model: cubeModel, loc: {x: 300, y: -300, z: 500}},
-  //{model: cubeModel, loc: {x: 150, y: -300, z: 500}},
-  //{model: cubeModel, loc: {x: 0, y: -300, z: 500}},
-  //{model: cubeModel, loc: {x: -150, y: -300, z: 500}},
-  //{model: cubeModel, loc: {x: -300, y: -300, z: 500}},
+  {model: cubeModel, loc: {x: 300, y: -300, z: 500}},
+  {model: cubeModel, loc: {x: 150, y: -300, z: 500}},
+  {model: cubeModel, loc: {x: 0, y: -300, z: 500}},
+  {model: cubeModel, loc: {x: -150, y: -300, z: 500}},
+  {model: cubeModel, loc: {x: -300, y: -300, z: 500}},
 
-  //{model: cubeModel, loc: {x: 300, y: -150, z: 500}},
+  {model: cubeModel, loc: {x: 300, y: -150, z: 500}},
   {model: cubeModel, loc: {x: 150, y: -150, z: 500}},
   {model: cubeModel, loc: {x: 0, y: -150, z: 500}},
   {model: cubeModel, loc: {x: -150, y: -150, z: 500}},
-  //{model: cubeModel, loc: {x: -300, y: -150, z: 500}},
+  {model: cubeModel, loc: {x: -300, y: -150, z: 500}},
 
-  //{model: cubeModel, loc: {x: 300, y: +150, z: 500}},
+  {model: cubeModel, loc: {x: 300, y: +150, z: 500}},
   {model: cubeModel, loc: {x: 150, y: +150, z: 500}},
   {model: cubeModel, loc: {x: 0, y: +150, z: 500}},
   {model: cubeModel, loc: {x: -150, y: +150, z: 500}},
-  //{model: cubeModel, loc: {x: -300, y: +150, z: 500}},
+  {model: cubeModel, loc: {x: -300, y: +150, z: 500}},
 
-  //{model: cubeModel, loc: {x: 300, y: +300, z: 500}},
-  //{model: cubeModel, loc: {x: 150, y: +300, z: 500}},
-  //{model: cubeModel, loc: {x: 0, y: +300, z: 500}},
-  //{model: cubeModel, loc: {x: -150, y: +300, z: 500}},
-  //{model: cubeModel, loc: {x: -300, y: +300, z: 500}},
+  {model: cubeModel, loc: {x: 300, y: +300, z: 500}},
+  {model: cubeModel, loc: {x: 150, y: +300, z: 500}},
+  {model: cubeModel, loc: {x: 0, y: +300, z: 500}},
+  {model: cubeModel, loc: {x: -150, y: +300, z: 500}},
+  {model: cubeModel, loc: {x: -300, y: +300, z: 500}},
 ]
 
 function setPixel(ctx, x, y) {
@@ -115,7 +115,11 @@ function drawPoint3d(ctx, p) {
 }
 
 function drawVertLine(ctx, x, y1, y2) {
-  ctx.fillRect(x*pixel_size, y1*pixel_size, pixel_size, (y2-y1 + 1)*pixel_size)
+  ctx.fillRect(x*pixel_size, y1*pixel_size, pixel_size, (y2-y1+1)*pixel_size)
+}
+
+function drawHorizLine(ctx, y, x1, x2) {
+  ctx.fillRect(x1*pixel_size, y*pixel_size, (x2-x1+1)*pixel_size, pixel_size)
 }
 
 function drawLine(ctx, x1, y1, x2, y2) {
@@ -132,30 +136,85 @@ function drawLine(ctx, x1, y1, x2, y2) {
   var x = x1
   var y = y1
   var s = (x2 - x1) / (y2 - y1)
+  var segmentStart = null
+  var segmentEnd = null
+  var currentRounded = null
   if ((s > 0 && s <= 1) || (s == 0 && y2 > y1)) {
     while (y <= y2) {
-      setPixel(ctx, Math.round(x), y)
+      var rounded = Math.round(x)
+      if (segmentStart == null) {
+        segmentStart = y
+        segmentEnd = y
+        currentRounded = rounded
+      } else if (currentRounded == rounded) {
+        segmentEnd = y
+      } else {
+        drawVertLine(ctx, currentRounded, segmentStart, segmentEnd)
+        segmentStart = y
+        segmentEnd = y
+        currentRounded = rounded
+      }
       y++
       x += s
     }
+    drawVertLine(ctx, currentRounded, segmentStart, segmentEnd)
   } else if ((s < 0 && s >= -1) || (s == 0 && y2 < y1)) {
     while (y >= y2) {
-      setPixel(ctx, Math.round(x), y)
+      var rounded = Math.round(x)
+      if (segmentStart == null) {
+        segmentStart = y
+        segmentEnd = y
+        currentRounded = rounded
+      } else if (currentRounded == rounded) {
+        segmentEnd = y
+      } else {
+        drawVertLine(ctx, currentRounded, segmentEnd, segmentStart)
+        segmentStart = y
+        segmentEnd = y
+        currentRounded = rounded
+      }
       y--
       x -= s
     }
+    drawVertLine(ctx, currentRounded, segmentEnd, segmentStart)
   } else if (s < -1) {
     while (x <= x2) {
-      setPixel(ctx, x, Math.round(y))
+      var rounded = Math.round(y)
+      if (segmentStart == null) {
+        segmentStart = x
+        segmentEnd = x
+        currentRounded = rounded
+      } else if (currentRounded == rounded) {
+        segmentEnd = x
+      } else {
+        drawHorizLine(ctx, currentRounded, segmentStart, segmentEnd)
+        segmentStart = x
+        segmentEnd = x
+        currentRounded = rounded
+      }
       x++
       y += 1/s
     }
+    drawHorizLine(ctx, currentRounded, segmentStart, segmentEnd)
   } else if (s > 1) {
     while (x <= x2) {
-      setPixel(ctx, x, Math.round(y))
+      var rounded = Math.round(y)
+      if (segmentStart == null) {
+        segmentStart = x
+        segmentEnd = x
+        currentRounded = rounded
+      } else if (currentRounded == rounded) {
+        segmentEnd = x
+      } else {
+        drawHorizLine(ctx, currentRounded, segmentStart, segmentEnd)
+        segmentStart = x
+        segmentEnd = x
+        currentRounded = rounded
+      }
       x++
       y += 1/s
     }
+    drawHorizLine(ctx, currentRounded, segmentStart, segmentEnd)
   }
 }
 
