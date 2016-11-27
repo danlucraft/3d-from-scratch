@@ -1,6 +1,59 @@
 
-var PIXEL_WIDTH  = 320
-var PIXEL_HEIGHT = 240
+//var test_canvas = document.getElementById("test")
+//var test_ctx = test_canvas.getContext("2d")
+//var width = test_canvas.width
+//var height = test_canvas.height
+//imageData = test_ctx.createImageData(width, height)
+//
+//function setImageDataPixel(imageData, x, y, r, g, b, a) {
+//    index = (x + y * imageData.width) * 4;
+//    imageData.data[index+0] = r;
+//    imageData.data[index+1] = g;
+//    imageData.data[index+2] = b;
+//    imageData.data[index+3] = a;
+//}
+//
+//for (i = 0; i < 10000; i++) {
+//    var x = Math.random() * width | 0; // |0 to truncate to Int32
+//    var y = Math.random() * height | 0;
+//    var r = Math.random() * 256 | 0;
+//    var g = Math.random() * 256 | 0;
+//    var b = Math.random() * 256 | 0;
+//    setImageDataPixel(imageData, x, y, r, g, b, 255); // 255 opaque
+//}
+//
+//var pos = 0; // index position into imagedata array
+//
+//var xoff = width / 3; // offsets to "center"
+//var yoff = height / 3;
+//
+//// walk left-to-right, top-to-bottom; it's the
+//// same as the ordering in the imagedata array:
+//
+//for (y = 0; y < height; y++) {
+//	for (x = 0; x < width; x++) {
+//		// calculate sine based on distance
+//		var x2 = x - xoff;
+//		var y2 = y - yoff;
+//		var d = Math.sqrt(x2*x2 + y2*y2);
+//		var t = Math.sin(d/6.0);
+//
+//		// calculate RGB values based on sine
+//		var r = t * 200;
+//		var g = 125 + t * 80;
+//		var b = 235 + t * 20;
+//
+//		// set red, green, blue, and alpha:
+//		imageData.data[pos++] = Math.max(0,Math.min(255, r));
+//		imageData.data[pos++] = Math.max(0,Math.min(255, g));
+//		imageData.data[pos++] = Math.max(0,Math.min(255, b));
+//		imageData.data[pos++] = 255; // opaque alpha
+//	}
+//}
+//test_ctx.putImageData(imageData, 0, 0)
+
+var PIXEL_WIDTH  = 160
+var PIXEL_HEIGHT = 120
 
 var WIN_WIDTH  = window.innerWidth
 var WIN_HEIGHT = window.innerHeight
@@ -79,18 +132,26 @@ var objects = [
   {model: cubeModel, loc: {x: -150, y: +150, z: 500}},
 ]
 
-function setPixel(ctx, x, y) {
-  if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
-    ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
+//function setPixel(ctx, x, y) {
+  //if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
+    //ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
+//}
+
+function setPixel(imageData, x, y, colour) {
+    index = (x + y * imageData.width) * 4;
+    imageData.data[index+0] = colour.r;
+    imageData.data[index+1] = colour.g;
+    imageData.data[index+2] = colour.b;
+    imageData.data[index+3] = colour.a;
 }
 
-function drawPoint3d(ctx, p) {
+function drawPoint3d(imageData, p, colour) {
   var x = Math.round((p.x-camera_location.x) * (screen_dist / (p.z-camera_location.z)))
   var y = Math.round((p.y-camera_location.y) * (screen_dist / (p.z-camera_location.z)))
-  setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
+  setPixel(imageData, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2, colour)
 }
 
-function drawLine(ctx, x1, y1, x2, y2) {
+function drawLine(imageData, x1, y1, x2, y2, colour) {
   // ensure line from left to right
   if (x2 < x1) {
     var xt = x1
@@ -106,42 +167,43 @@ function drawLine(ctx, x1, y1, x2, y2) {
   var s = (x2 - x1) / (y2 - y1)
   if ((s > 0 && s <= 1) || (s == 0 && y2 > y1)) {
     while (y <= y2) {
-      setPixel(ctx, Math.round(x), y)
+      setPixel(imageData, Math.round(x), y, colour)
       y++
       x += s
     }
   } else if ((s < 0 && s >= -1) || (s == 0 && y2 < y1)) {
     while (y >= y2) {
-      setPixel(ctx, Math.round(x), y)
+      setPixel(imageData, Math.round(x), y, colour)
       y--
       x -= s
     }
   } else if (s < -1) {
     while (x <= x2) {
-      setPixel(ctx, x, Math.round(y))
+      setPixel(imageData, x, Math.round(y), colour)
       x++
       y += 1/s
     }
   } else if (s > 1) {
     while (x <= x2) {
-      setPixel(ctx, x, Math.round(y))
+      setPixel(imageData, x, Math.round(y), colour)
       x++
       y += 1/s
     }
   }
 }
 
-function drawLine3d(ctx, p1, p2) {
+function drawLine3d(imageData, p1, p2, colour) {
   var x1 = Math.round((p1.x-camera_location.x) * (screen_dist / (p1.z-camera_location.z)))
   var y1 = Math.round((p1.y-camera_location.y) * (screen_dist / (p1.z-camera_location.z)))
   var x2 = Math.round((p2.x-camera_location.x) * (screen_dist / (p2.z-camera_location.z)))
   var y2 = Math.round((p2.y-camera_location.y) * (screen_dist / (p2.z-camera_location.z)))
   var r = -camera_orientation.roll
-  drawLine(ctx, 
+  drawLine(imageData, 
     x1*Math.cos(r) - y1*Math.sin(r) + PIXEL_WIDTH/2, 
     y1*Math.cos(r) + x1*Math.sin(r) + PIXEL_HEIGHT/2,
     x2*Math.cos(r) - y2*Math.sin(r) + PIXEL_WIDTH/2,
-    y2*Math.cos(r) + x2*Math.sin(r) + PIXEL_HEIGHT/2)
+    y2*Math.cos(r) + x2*Math.sin(r) + PIXEL_HEIGHT/2, 
+    colour)
 }
 
 var changed = true
@@ -154,6 +216,7 @@ var perfInfo = {
   funcStartTime:           Date.now(),
 }
 
+var imageData = ctx.createImageData(PIXEL_WIDTH, PIXEL_HEIGHT)
 function drawFrame() {
   try {
   perfInfo.funcStartTime = Date.now()
@@ -186,10 +249,12 @@ function drawFrame() {
   document.getElementById("debug").innerHTML = JSON.stringify([camera_location, camera_orientation])
   // document.getElementById("debug2").innerHTML = JSON.stringify(view_plane_normals)
 
+
   // clear frame
-  ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
+  //ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
   // draw edges
+  var col = {r: 255, g: 0, b: 0, a: 255}
   for (var i = 0; i < objects.length; i++) {
     var object = objects[i]
     for (var j = 0; j < object.model.edges.length; j++) {
@@ -200,11 +265,14 @@ function drawFrame() {
       var newP2 = {x: p2.x + loc.x, y: p2.y + loc.y, z: p2.z + loc.z}
       var clampedLine = clampLineToView(newP1, newP2)
       if (clampedLine) {
-        ctx.fillStyle = "yellow"
-        drawLine3d(ctx, clampedLine[0], clampedLine[1])
+        drawLine3d(imageData, clampedLine[0], clampedLine[1], col)
       }
     }
   }
+
+  ctx.putImageData(imageData, 0, 0)
+  ctx.fillStyle = "yellow"
+  ctx.fillRect(0,0, 10, 10)
 
   changed = false
 
