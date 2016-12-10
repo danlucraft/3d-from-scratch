@@ -142,9 +142,7 @@ function drawPoint3d(ctx: CanvasRenderingContext2D, p: Point): void {
 function drawLine(ctx: CanvasRenderingContext2D, p: Point2D, q: Point2D): void {
   // ensure line from left to right
   if (q.x < p.x) {
-    var t = p
-    p = q
-    q = t
+    [p, q] = [q, p]
   }
 
   var x = p.x
@@ -214,33 +212,30 @@ function drawDemoLines(ctx: CanvasRenderingContext2D): void {
   drawLine(ctx, {x: 10, y: 60}, {x: 50, y: 90})
 }
 
-var perfInfo = {
-  lastCalcUpdateTime:    Date.now(),
-  frameCounter:          0,
-  elapsedTimeInFunction: 0,
+var perfInfo = {}
+
+function resetPerfInfo(perfInfo) {
+    perfInfo.lastCalcUpdateTime    = Date.now()
+    perfInfo.frameCounter          = 0
+    perfInfo.elapsedTimeInFunction = 0
 }
 
-function showPerfInfo(frameRate, runtimePercentage) {
-  console.log({
-    frameRate:frameRate, 
-    timeBudgetUsed: Math.round(runtimePercentage*1000)/10 + "%"
-  })
-}
+resetPerfInfo(perfInfo)
 
 function updatePerfInfo(perfInfo, funcStartTime) {
   perfInfo.elapsedTimeInFunction += Date.now() - funcStartTime
   perfInfo.frameCounter++
 
   if (perfInfo.frameCounter == 100) {
-    var timeSinceLast = Date.now() - perfInfo.lastCalcUpdateTime
-    var frameRate = Math.round(1000*1000/timeSinceLast)/10
+    var timeSinceLast     = Date.now() - perfInfo.lastCalcUpdateTime
+    var frameRate         = Math.round(1000*1000/timeSinceLast)/10
     var runtimePercentage = perfInfo.elapsedTimeInFunction / (Date.now() - perfInfo.lastCalcUpdateTime)
 
-    showPerfInfo(frameRate, runtimePercentage)
-
-    perfInfo.lastCalcUpdateTime = Date.now()
-    perfInfo.frameCounter = 0
-    perfInfo.elapsedTimeInFunction = 0
+    console.log({
+      frameRate:      frameRate, 
+      timeBudgetUsed: Math.round(runtimePercentage*1000)/10 + "%"
+    })
+    resetPerfInfo(perfInfo)
   }
 }
 
@@ -249,6 +244,8 @@ function drawFrame(): void {
 
   // clear frame
   ctx.clearRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
+
+  drawDemoLines(ctx)
 
   // draw edges
   ctx.fillStyle = "yellow"
