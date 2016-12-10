@@ -131,6 +131,31 @@ function drawFrame() {
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
+  ctx.fillStyle = "yellow"
+  drawLine(ctx, 10, 60, 10, 100)
+  drawLine(ctx, 10, 60, 20, 100)
+  drawLine(ctx, 10, 60, 30, 100)
+  drawLine(ctx, 10, 60, 40, 100)
+  drawLine(ctx, 10, 60, 50, 100)
+
+  ctx.fillStyle = "red"
+  drawLine(ctx, 10, 60, 10, 20)
+  drawLine(ctx, 10, 60, 20, 20)
+  drawLine(ctx, 10, 60, 30, 20)
+  drawLine(ctx, 10, 60, 40, 20)
+  drawLine(ctx, 10, 60, 50, 20)
+
+  ctx.fillStyle = "green"
+  drawLine(ctx, 10, 60, 50, 30)
+  drawLine(ctx, 10, 60, 50, 40)
+  drawLine(ctx, 10, 60, 50, 50)
+  drawLine(ctx, 10, 60, 50, 60)
+
+  ctx.fillStyle = "purple"
+  drawLine(ctx, 10, 60, 50, 70)
+  drawLine(ctx, 10, 60, 50, 80)
+  drawLine(ctx, 10, 60, 50, 90)
+  
   // draw edges
   for (var j = 0; j < edges.length; j++) {
     var p1 = cube[edges[j][0]]
