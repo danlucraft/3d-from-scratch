@@ -129,31 +129,6 @@ function drawFrame() {
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
-  ctx.fillStyle = "yellow"
-  drawLine(ctx, 10, 60, 10, 100)
-  drawLine(ctx, 10, 60, 20, 100)
-  drawLine(ctx, 10, 60, 30, 100)
-  drawLine(ctx, 10, 60, 40, 100)
-  drawLine(ctx, 10, 60, 50, 100)
-
-  ctx.fillStyle = "red"
-  drawLine(ctx, 10, 60, 10, 20)
-  drawLine(ctx, 10, 60, 20, 20)
-  drawLine(ctx, 10, 60, 30, 20)
-  drawLine(ctx, 10, 60, 40, 20)
-  drawLine(ctx, 10, 60, 50, 20)
-
-  ctx.fillStyle = "green"
-  drawLine(ctx, 10, 60, 50, 30)
-  drawLine(ctx, 10, 60, 50, 40)
-  drawLine(ctx, 10, 60, 50, 50)
-  drawLine(ctx, 10, 60, 50, 60)
-
-  ctx.fillStyle = "purple"
-  drawLine(ctx, 10, 60, 50, 70)
-  drawLine(ctx, 10, 60, 50, 80)
-  drawLine(ctx, 10, 60, 50, 90)
-
   // draw edges
   for (var j = 0; j < edges.length; j++) {
     var p1 = cube[edges[j][0]]
@@ -168,16 +143,18 @@ function drawFrame() {
   }
 
   // update cube location
-  if (keyState.up)    { transform.z += 2 }
-  if (keyState.down)  { transform.z -= 2 }
-  if (keyState.left)  { transform.x -= 2 }
-  if (keyState.right) { transform.x += 2 }
+  if (keyState.up)    { transform.z += 4 }
+  if (keyState.down)  { transform.z -= 4 }
+  if (keyState.left)  { transform.x -= 4 }
+  if (keyState.right) { transform.x += 4 }
 
   window.requestAnimationFrame(drawFrame)
 }
 
 window.requestAnimationFrame(drawFrame)
 
+// Cross product of two vectors
+// u and v are vectors with x,y,z components
 function cross(u, v) {
   return [
     u[1]*v[2] - u[2]*v[1], 
@@ -186,6 +163,7 @@ function cross(u, v) {
   ]
 }
 
+// Dot product of two vectors
 // u and v are vectors with x,y,z components
 function dot(u, v) {
   return u[0]*v[0] + u[1]*v[1] + u[2]*v[2]
@@ -199,7 +177,7 @@ var screen_coords = [
   [ PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top right
 ]
 
-// cross product of two points in each place
+// cross product of two vectors in each plane
 var view_plane_normals = [
   cross(screen_coords[0], screen_coords[1]), // bottom
   cross(screen_coords[1], screen_coords[2]), // left
@@ -255,6 +233,7 @@ function clampLineToView(p, q) {
 
 // takes two points that define a line and a plane normal 
 // and returns where the line intersects the plane
+// (assumes (0,0,0) is in the plane)
 function linePlaneIntersection(p, q, n) {
   var v = [q.x - p.x, q.y - p.y, q.z - p.z]
   var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z) /
