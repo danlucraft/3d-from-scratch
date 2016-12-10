@@ -61,17 +61,19 @@ var keyState = {
 }
 
 document.addEventListener('keydown', function(e) {
-  if (e.keyIdentifier == "Up")    keyState.up = true
-  if (e.keyIdentifier == "Down")  keyState.down = true
-  if (e.keyIdentifier == "Left")  keyState.left = true
-  if (e.keyIdentifier == "Right")  keyState.right = true
+  var keyName = e.key || e["keyIdentifier"] // Chrome vs Safari
+  if (keyName == "ArrowUp"    || keyName == "Up")    keyState.up = true
+  if (keyName == "ArrowDown"  || keyName == "Down")  keyState.down = true
+  if (keyName == "ArrowLeft"  || keyName == "Left")  keyState.left = true
+  if (keyName == "ArrowRight" || keyName == "Right")  keyState.right = true
 })
 
 document.addEventListener('keyup', function(e) {
-  if (e.keyIdentifier == "Up")    keyState.up = false
-  if (e.keyIdentifier == "Down")  keyState.down = false
-  if (e.keyIdentifier == "Left")  keyState.left = false
-  if (e.keyIdentifier == "Right") keyState.right = false
+  var keyName = e.key || e["keyIdentifier"] 
+  if (keyName == "ArrowUp"    || keyName == "Up")    keyState.up = false
+  if (keyName == "ArrowDown"  || keyName == "Down")  keyState.down = false
+  if (keyName == "ArrowLeft"  || keyName == "Left")  keyState.left = false
+  if (keyName == "ArrowRight" || keyName == "Right") keyState.right = false
 })
 
 var transform = {x: 0, y: 0, z: 0}

@@ -8,20 +8,28 @@ var ratio_width  = WIN_WIDTH / PIXEL_WIDTH
 var ratio_height = WIN_HEIGHT / PIXEL_HEIGHT
 var pixel_size = Math.floor(Math.min(ratio_width, ratio_height))
 
-var canvas = document.getElementById("canvas")
+var canvas = document.getElementById("canvas") as HTMLCanvasElement
 canvas.width = PIXEL_WIDTH * pixel_size
 canvas.height = PIXEL_HEIGHT * pixel_size
 
 var ctx = canvas.getContext("2d")
 
-function setPixel(ctx, x, y) {
+function setPixel(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
     ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
 }
 
 var screen_dist = 100
 
-function drawPoint3d(ctx, p) {
+interface Point {
+  x: number,
+  y: number,
+  z: number
+}
+
+type Vector = number[]
+
+function drawPoint3d(ctx: CanvasRenderingContext2D, p: Point): void {
   var x = Math.round(p.x * (screen_dist / p.z))
   var y = Math.round(p.y * (screen_dist / p.z))
   setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
@@ -78,7 +86,7 @@ document.addEventListener('keyup', function(e) {
 
 var transform = {x: 0, y: 0, z: 0}
 
-function drawLine(ctx, x1, y1, x2, y2) {
+function drawLine(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number): void {
   // ensure line from left to right
   if (x2 < x1) {
     var xt = x1
@@ -119,7 +127,7 @@ function drawLine(ctx, x1, y1, x2, y2) {
   }
 }
 
-function drawLine3d(ctx, p1, p2) {
+function drawLine3d(ctx: CanvasRenderingContext2D, p1: Point, p2: Point): void {
   var x1 = Math.round(p1.x * (screen_dist / p1.z))
   var y1 = Math.round(p1.y * (screen_dist / p1.z))
   var x2 = Math.round(p2.x * (screen_dist / p2.z))
@@ -127,7 +135,7 @@ function drawLine3d(ctx, p1, p2) {
   drawLine(ctx, x1 + PIXEL_WIDTH/2, y1 + PIXEL_HEIGHT/2, x2 + PIXEL_WIDTH/2, y2 + PIXEL_HEIGHT/2)
 }
 
-function drawFrame() {
+function drawFrame(): void {
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, PIXEL_WIDTH*pixel_size, PIXEL_HEIGHT*pixel_size)
 
@@ -157,7 +165,7 @@ window.requestAnimationFrame(drawFrame)
 
 // Cross product of two vectors
 // u and v are vectors with x,y,z components
-function cross(u, v) {
+function cross(u: Vector, v: Vector): Vector {
   return [
     u[1]*v[2] - u[2]*v[1], 
     u[2]*v[0] - u[0]*v[2],
@@ -167,12 +175,12 @@ function cross(u, v) {
 
 // Dot product of two vectors
 // u and v are vectors with x,y,z components
-function dot(u, v) {
+function dot(u: Vector, v: Vector): number {
   return u[0]*v[0] + u[1]*v[1] + u[2]*v[2]
 }
 
 // clockwise from bottom right
-var screen_coords = [
+var screen_coords: number[][] = [
   [ PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom rt
   [-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist], // bottom left
   [-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist], // top left
@@ -180,7 +188,7 @@ var screen_coords = [
 ]
 
 // cross product of two vectors in each plane
-var view_plane_normals = [
+var view_plane_normals: Vector[] = [
   cross(screen_coords[0], screen_coords[1]), // bottom
   cross(screen_coords[1], screen_coords[2]), // left
   cross(screen_coords[2], screen_coords[3]), // top
@@ -189,7 +197,7 @@ var view_plane_normals = [
 
 // returns whether the point is inside all the planes
 // that define the view area
-function isPointInView(p) {
+function isPointInView(p: Point): boolean {
   for (var i = 0; i < view_plane_normals.length; i++)
     if (dot([p.x, p.y, p.z], view_plane_normals[i]) < -0.001)
       return false
@@ -199,7 +207,7 @@ function isPointInView(p) {
 // Returns false if the line between p and q is not visible
 // at all. If it is, returns the points for the part of the
 // line that is visible.
-function clampLineToView(p, q) {
+function clampLineToView(p: Point, q: Point): Point[]|boolean {
   var p_in = isPointInView(p)
   var q_in = isPointInView(q)
 
@@ -215,11 +223,11 @@ function clampLineToView(p, q) {
   // points
   for (var i = 0; i < view_plane_normals.length; i++) {
     var ip = linePlaneIntersection(p, q, view_plane_normals[i])
-    if (ip && isPointInView(ip)) {
+    if (ip != false && isPointInView(ip as Point)) {
       if (visible_a == null) {
-        visible_a = ip
+        visible_a = ip as Point
       } else if (visible_b == null) {
-        visible_b = ip
+        visible_b = ip as Point
         break
       }
     }
@@ -234,14 +242,15 @@ function clampLineToView(p, q) {
 }
 
 // takes two points that define a line and a plane normal 
-// and returns where the line intersects the plane
+// and returns where the line intersects the plane, or false if 
+// it does not
 // (assumes (0,0,0) is in the plane)
-function linePlaneIntersection(p, q, n) {
+function linePlaneIntersection(p: Point, q: Point, n: Vector): Point|boolean {
   var v = [q.x - p.x, q.y - p.y, q.z - p.z]
   var t = -1*(n[0]*p.x + n[1]*p.y + n[2]*p.z) /
              (n[0]*v[0] + n[1]*v[1] + n[2]*v[2])
   if (t < 0 || t > 1)
-    return null
+    return false
   return {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
 }
 
