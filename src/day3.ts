@@ -258,8 +258,8 @@ function drawFrame(): void {
       var p1 = object.model.points[object.model.edges[j][0]]
       var p2 = object.model.points[object.model.edges[j][1]]
       var loc = object.location
-      var newP1 = {x: p1.x + loc.x + transform.x, y: p1.y + loc.y + transform.y, z: p1.z + loc.z + transform.z}
-      var newP2 = {x: p2.x + loc.x + transform.x, y: p2.y + loc.y + transform.y, z: p2.z + loc.z + transform.z}
+      var newP1: Point = {x: p1.x + loc.x + transform.x, y: p1.y + loc.y + transform.y, z: p1.z + loc.z + transform.z}
+      var newP2: Point = {x: p2.x + loc.x + transform.x, y: p2.y + loc.y + transform.y, z: p2.z + loc.z + transform.z}
       var clampedLine = clampLineToView(newP1, newP2)
       if (clampedLine)
         drawLine3d(ctx, clampedLine[0], clampedLine[1])
@@ -320,10 +320,10 @@ function isPointInView(p: Point): boolean {
   return true
 }
 
-// Returns false if the line between p and q is not visible
+// Returns null if the line between p and q is not visible
 // at all. If it is, returns the points for the part of the
 // line that is visible.
-function clampLineToView(p: Point, q: Point): Point[]|boolean {
+function clampLineToView(p: Point, q: Point): Point[] {
   var p_in = isPointInView(p)
   var q_in = isPointInView(q)
 
@@ -354,7 +354,7 @@ function clampLineToView(p: Point, q: Point): Point[]|boolean {
   if (visible_a != null && visible_b != null)
     return [visible_a, visible_b]
   else
-    return false
+    return null
 }
 
 // takes two points that define a line and a plane normal 
