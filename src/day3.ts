@@ -27,14 +27,13 @@ class Vector {
 }
 
 class Model {
-  vertices: Point[]
-  edges: Edge[]
+  constructor(public vertices: Point[], public edges: Edge[]) {}
 }
 
 type Edge = number[]
 
-var cubeModel: Model = {
-  vertices: [
+var cubeModel = new Model(
+  [
 	  new Point(50,  50,  50),
 	  new Point(50,  50,  -50),
 	  new Point(50,  -50, 50),
@@ -44,7 +43,7 @@ var cubeModel: Model = {
 	  new Point(-50, -50, 50), 
 	  new Point(-50, -50, -50),
 	],
-  edges: [
+  [
 	  [0, 1],
 	  [0, 2],
 	  [0, 3],
@@ -58,37 +57,36 @@ var cubeModel: Model = {
 	  [5, 7],
 	  [6, 7],
 	]
-}
+)
 
-interface Instance {
-  model: Model,
-  location: Point
+class Instance {
+  constructor(public model: Model, public location: Point) {}
 }
 
 var objects: Instance[] = [
-  {model: cubeModel, location: new Point(0,    0,    400)},
-  {model: cubeModel, location: new Point(150,  0,    500)},
-  {model: cubeModel, location: new Point(-150, 0,    500)},
-  {model: cubeModel, location: new Point(300,  -300, 500)},
-  {model: cubeModel, location: new Point(150,  -300, 500)},
-  {model: cubeModel, location: new Point(0,    -300, 500)},
-  {model: cubeModel, location: new Point(-150, -300, 500)},
-  {model: cubeModel, location: new Point(-300, -300, 500)},
-  {model: cubeModel, location: new Point(300,  -150, 500)},
-  {model: cubeModel, location: new Point(150,  -150, 500)},
-  {model: cubeModel, location: new Point(0,    -150, 500)},
-  {model: cubeModel, location: new Point(-150, -150, 500)},
-  {model: cubeModel, location: new Point(-300, -150, 500)},
-  {model: cubeModel, location: new Point(300,  +150, 500)},
-  {model: cubeModel, location: new Point(150,  +150, 500)},
-  {model: cubeModel, location: new Point(0,    +150, 500)},
-  {model: cubeModel, location: new Point(-150, +150, 500)},
-  {model: cubeModel, location: new Point(-300, +150, 500)},
-  {model: cubeModel, location: new Point(300,  +300, 500)},
-  {model: cubeModel, location: new Point(150,  +300, 500)},
-  {model: cubeModel, location: new Point(0,    +300, 500)},
-  {model: cubeModel, location: new Point(-150, +300, 500)},
-  {model: cubeModel, location: new Point(-300, +300, 500)},
+  new Instance(cubeModel, new Point(0,    0,    400)),
+  new Instance(cubeModel, new Point(150,  0,    500)),
+  new Instance(cubeModel, new Point(-150, 0,    500)),
+  new Instance(cubeModel, new Point(300,  -300, 500)),
+  new Instance(cubeModel, new Point(150,  -300, 500)),
+  new Instance(cubeModel, new Point(0,    -300, 500)),
+  new Instance(cubeModel, new Point(-150, -300, 500)),
+  new Instance(cubeModel, new Point(-300, -300, 500)),
+  new Instance(cubeModel, new Point(300,  -150, 500)),
+  new Instance(cubeModel, new Point(150,  -150, 500)),
+  new Instance(cubeModel, new Point(0,    -150, 500)),
+  new Instance(cubeModel, new Point(-150, -150, 500)),
+  new Instance(cubeModel, new Point(-300, -150, 500)),
+  new Instance(cubeModel, new Point(300,  +150, 500)),
+  new Instance(cubeModel, new Point(150,  +150, 500)),
+  new Instance(cubeModel, new Point(0,    +150, 500)),
+  new Instance(cubeModel, new Point(-150, +150, 500)),
+  new Instance(cubeModel, new Point(-300, +150, 500)),
+  new Instance(cubeModel, new Point(300,  +300, 500)),
+  new Instance(cubeModel, new Point(150,  +300, 500)),
+  new Instance(cubeModel, new Point(0,    +300, 500)),
+  new Instance(cubeModel, new Point(-150, +300, 500)),
+  new Instance(cubeModel, new Point(-300, +300, 500)),
 ]
 
 var keyState = {
@@ -273,11 +271,11 @@ window.requestAnimationFrame(drawFrame)
 // Cross product of two vectors
 // u and v are vectors with x,y,z components
 function cross(u: Vector, v: Vector): Vector {
-  return {
-    x: u.y*v.z - u.z*v.y,
-    y: u.z*v.x - u.x*v.z,
-    z: u.x*v.y - u.y*v.x,
-  }
+  return new Vector(
+    u.y*v.z - u.z*v.y,
+    u.z*v.x - u.x*v.z,
+    u.x*v.y - u.y*v.x,
+  )
 }
 
 // Dot product of two vectors
