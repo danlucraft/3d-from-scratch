@@ -14,41 +14,35 @@ canvas.height = PIXEL_HEIGHT * pixel_size
 
 var ctx = canvas.getContext("2d")
 
-
-interface Point2D {
-  x: number,
-  y: number
+class Point2D {
+  constructor(public x: number, public y: number) {}
 }
 
-interface Point {
-  x: number,
-  y: number,
-  z: number
+class Point {
+  constructor(public x: number, public y: number, public z: number) {}
 }
 
-interface Vector {
-  x: number,
-  y: number,
-  z: number
+class Vector {
+  constructor(public x: number, public y: number, public z: number) {}
 }
 
-interface Model {
-  points: Point[],
+class Model {
+  vertices: Point[]
   edges: Edge[]
 }
 
 type Edge = number[]
 
 var cubeModel: Model = {
-  points: [
-	  { x: 50,  y: 50,  z: 50},
-	  { x: 50,  y: 50,  z: -50},
-	  { x: 50,  y: -50, z: 50},
-	  { x: -50, y: 50,  z: 50},
-	  { x: 50,  y: -50, z: -50},
-	  { x: -50, y: 50,  z: -50},
-	  { x: -50, y: -50, z: 50}, 
-	  { x: -50, y: -50, z: -50}
+  vertices: [
+	  new Point(50,  50,  50),
+	  new Point(50,  50,  -50),
+	  new Point(50,  -50, 50),
+	  new Point(-50, 50,  50),
+	  new Point(50,  -50, -50),
+	  new Point(-50, 50,  -50),
+	  new Point(-50, -50, 50), 
+	  new Point(-50, -50, -50),
 	],
   edges: [
 	  [0, 1],
@@ -72,34 +66,29 @@ interface Instance {
 }
 
 var objects: Instance[] = [
-  {model: cubeModel, location: {x: 0, y: 0, z: 400}},
-  
-  {model: cubeModel, location: {x: 150, y: 0, z: 500}},
-  {model: cubeModel, location: {x: -150, y: 0, z: 500}},
-
-  {model: cubeModel, location: {x: 300, y: -300, z: 500}},
-  {model: cubeModel, location: {x: 150, y: -300, z: 500}},
-  {model: cubeModel, location: {x: 0, y: -300, z: 500}},
-  {model: cubeModel, location: {x: -150, y: -300, z: 500}},
-  {model: cubeModel, location: {x: -300, y: -300, z: 500}},
-
-  {model: cubeModel, location: {x: 300, y: -150, z: 500}},
-  {model: cubeModel, location: {x: 150, y: -150, z: 500}},
-  {model: cubeModel, location: {x: 0, y: -150, z: 500}},
-  {model: cubeModel, location: {x: -150, y: -150, z: 500}},
-  {model: cubeModel, location: {x: -300, y: -150, z: 500}},
-
-  {model: cubeModel, location: {x: 300, y: +150, z: 500}},
-  {model: cubeModel, location: {x: 150, y: +150, z: 500}},
-  {model: cubeModel, location: {x: 0, y: +150, z: 500}},
-  {model: cubeModel, location: {x: -150, y: +150, z: 500}},
-  {model: cubeModel, location: {x: -300, y: +150, z: 500}},
-
-  {model: cubeModel, location: {x: 300, y: +300, z: 500}},
-  {model: cubeModel, location: {x: 150, y: +300, z: 500}},
-  {model: cubeModel, location: {x: 0, y: +300, z: 500}},
-  {model: cubeModel, location: {x: -150, y: +300, z: 500}},
-  {model: cubeModel, location: {x: -300, y: +300, z: 500}},
+  {model: cubeModel, location: new Point(0,    0,    400)},
+  {model: cubeModel, location: new Point(150,  0,    500)},
+  {model: cubeModel, location: new Point(-150, 0,    500)},
+  {model: cubeModel, location: new Point(300,  -300, 500)},
+  {model: cubeModel, location: new Point(150,  -300, 500)},
+  {model: cubeModel, location: new Point(0,    -300, 500)},
+  {model: cubeModel, location: new Point(-150, -300, 500)},
+  {model: cubeModel, location: new Point(-300, -300, 500)},
+  {model: cubeModel, location: new Point(300,  -150, 500)},
+  {model: cubeModel, location: new Point(150,  -150, 500)},
+  {model: cubeModel, location: new Point(0,    -150, 500)},
+  {model: cubeModel, location: new Point(-150, -150, 500)},
+  {model: cubeModel, location: new Point(-300, -150, 500)},
+  {model: cubeModel, location: new Point(300,  +150, 500)},
+  {model: cubeModel, location: new Point(150,  +150, 500)},
+  {model: cubeModel, location: new Point(0,    +150, 500)},
+  {model: cubeModel, location: new Point(-150, +150, 500)},
+  {model: cubeModel, location: new Point(-300, +150, 500)},
+  {model: cubeModel, location: new Point(300,  +300, 500)},
+  {model: cubeModel, location: new Point(150,  +300, 500)},
+  {model: cubeModel, location: new Point(0,    +300, 500)},
+  {model: cubeModel, location: new Point(-150, +300, 500)},
+  {model: cubeModel, location: new Point(-300, +300, 500)},
 ]
 
 var keyState = {
@@ -212,23 +201,28 @@ function drawDemoLines(ctx: CanvasRenderingContext2D): void {
   drawLine(ctx, {x: 10, y: 60}, {x: 50, y: 90})
 }
 
+var PERF_INFO_FRAMES = 100
 var perfInfo = {}
 
+// clear perf info after displaying it
 function resetPerfInfo(perfInfo) {
     perfInfo.lastCalcUpdateTime    = Date.now()
     perfInfo.frameCounter          = 0
     perfInfo.elapsedTimeInFunction = 0
 }
 
+// set up data
 resetPerfInfo(perfInfo)
 
+// update after every frame
 function updatePerfInfo(perfInfo, funcStartTime) {
   perfInfo.elapsedTimeInFunction += Date.now() - funcStartTime
   perfInfo.frameCounter++
 
-  if (perfInfo.frameCounter == 100) {
+  // after every PERF_INFO_FRAMES frames, dump performance info
+  if (perfInfo.frameCounter == PERF_INFO_FRAMES) {
     var timeSinceLast     = Date.now() - perfInfo.lastCalcUpdateTime
-    var frameRate         = Math.round(1000*1000/timeSinceLast)/10
+    var frameRate         = Math.round(1000*10*PERF_INFO_FRAMES/timeSinceLast)/10
     var runtimePercentage = perfInfo.elapsedTimeInFunction / (Date.now() - perfInfo.lastCalcUpdateTime)
 
     console.log({
@@ -252,11 +246,11 @@ function drawFrame(): void {
   for (var i = 0; i < objects.length; i++) {
     var object = objects[i]
     for (var j = 0; j < object.model.edges.length; j++) {
-      var p1 = object.model.points[object.model.edges[j][0]]
-      var p2 = object.model.points[object.model.edges[j][1]]
+      var p1 = object.model.vertices[object.model.edges[j][0]]
+      var p2 = object.model.vertices[object.model.edges[j][1]]
       var loc = object.location
-      var newP1: Point = {x: p1.x + loc.x + transform.x, y: p1.y + loc.y + transform.y, z: p1.z + loc.z + transform.z}
-      var newP2: Point = {x: p2.x + loc.x + transform.x, y: p2.y + loc.y + transform.y, z: p2.z + loc.z + transform.z}
+      var newP1 = new Point(p1.x + loc.x + transform.x, p1.y + loc.y + transform.y, p1.z + loc.z + transform.z)
+      var newP2 = new Point(p2.x + loc.x + transform.x, p2.y + loc.y + transform.y, p2.z + loc.z + transform.z)
       var clampedLine = clampLineToView(newP1, newP2)
       if (clampedLine)
         drawLine3d(ctx, clampedLine[0], clampedLine[1])
@@ -294,10 +288,10 @@ function dot(u: Vector, v: Vector): number {
 
 // clocationkwise from bottom right
 var screen_coords: Point[] = [
-  { x:  PIXEL_WIDTH/2, y: PIXEL_HEIGHT/2, z: screen_dist}, // bottom rt
-  { x: -PIXEL_WIDTH/2, y: PIXEL_HEIGHT/2, z: screen_dist}, // bottom left
-  { x: -PIXEL_WIDTH/2, y:-PIXEL_HEIGHT/2, z: screen_dist}, // top left
-  { x:  PIXEL_WIDTH/2, y:-PIXEL_HEIGHT/2, z: screen_dist}, // top right
+  new Point( PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist), // bottom rt
+  new Point(-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist), // bottom left
+  new Point(-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist), // top left
+  new Point( PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist), // top right
 ]
 
 // cross product of two vectors in each plane
@@ -364,6 +358,6 @@ function linePlaneIntersection(p: Point, q: Point, n: Vector): Point {
              (n.x*v[0] + n.y*v[1] + n.z*v[2])
   if (t < 0 || t > 1)
     return null
-  return {x: p.x + t*v[0], y: p.y + t*v[1], z: p.z + t*v[2]}
+  return new Point(p.x + t*v[0], p.y + t*v[1], p.z + t*v[2])
 }
 
