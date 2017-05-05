@@ -6,3 +6,13 @@ This is a project to write an Elite clone, in JavaScript, without reading any
 out myself. For fun.
 
 Written up on my blog at http://danlucraft.com/3d-from-scratch-intro/
+
+Running
+-------
+
+Do:
+
+    brew install yarn
+    export PATH="$PATH:`yarn bin`"
+    yarn install
+    webpack
