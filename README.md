@@ -15,4 +15,6 @@ Do:
     brew install yarn
     export PATH="$PATH:`yarn bin`"
     yarn install
-    webpack
+    rake build
+
+You can now open the files in demos.
