@@ -5,9 +5,4 @@ This is a project to write an Elite clone, in JavaScript, without reading any
 3d/2d graphics or game programming tutorials at all. I've got to figure everything
 out myself. For fun.
 
-## Day One
-
-Implemented pixel screen, line drawing, and a 3d cube you can move with cursor keys.
-
-Writeup [here](http://danlucraft.com/3d-from-scratch-1/).
-
+Written up on my blog at http://danlucraft.com/3d-from-scratch-intro/
