@@ -1,5 +1,5 @@
-var PIXEL_WIDTH = 320;
-var PIXEL_HEIGHT = 240;
+var PIXEL_WIDTH = 640;
+var PIXEL_HEIGHT = 480;
 var WIN_WIDTH = window.innerWidth;
 var WIN_HEIGHT = window.innerHeight;
 var ratio_width = WIN_WIDTH / PIXEL_WIDTH;
@@ -70,28 +70,10 @@ var Instance = /** @class */ (function () {
     return Instance;
 }());
 var objects = [
-    new Instance(cubeModel, new Point(0, 0, 400)),
-    new Instance(cubeModel, new Point(150, 0, 500)),
-    new Instance(cubeModel, new Point(-150, 0, 500)),
+    new Instance(cubeModel, new Point(0, 0, 500)),
+    new Instance(cubeModel, new Point(300, 0, 500)),
+    new Instance(cubeModel, new Point(-300, 0, 500)),
     new Instance(cubeModel, new Point(300, -300, 500)),
-    new Instance(cubeModel, new Point(150, -300, 500)),
-    new Instance(cubeModel, new Point(0, -300, 500)),
-    new Instance(cubeModel, new Point(-150, -300, 500)),
-    new Instance(cubeModel, new Point(-300, -300, 500)),
-    new Instance(cubeModel, new Point(300, -150, 500)),
-    new Instance(cubeModel, new Point(150, -150, 500)),
-    new Instance(cubeModel, new Point(0, -150, 500)),
-    new Instance(cubeModel, new Point(-150, -150, 500)),
-    new Instance(cubeModel, new Point(-300, -150, 500)),
-    new Instance(cubeModel, new Point(300, +150, 500)),
-    new Instance(cubeModel, new Point(150, +150, 500)),
-    new Instance(cubeModel, new Point(0, +150, 500)),
-    new Instance(cubeModel, new Point(-150, +150, 500)),
-    new Instance(cubeModel, new Point(-300, +150, 500)),
-    new Instance(cubeModel, new Point(300, +300, 500)),
-    new Instance(cubeModel, new Point(150, +300, 500)),
-    new Instance(cubeModel, new Point(0, +300, 500)),
-    new Instance(cubeModel, new Point(-150, +300, 500)),
     new Instance(cubeModel, new Point(-300, +300, 500)),
 ];
 var keyState = {
@@ -122,15 +104,15 @@ document.addEventListener('keyup', function (e) {
     if (keyName == "ArrowRight" || keyName == "Right")
         keyState.right = false;
 });
-var screen_dist = 100;
+var viewScreen = { x: 0, y: 0, z: 100, width: 160, height: 120 };
 var transform = { x: 0, y: 0, z: 0 };
 function setPixel(ctx, x, y) {
     if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
         ctx.fillRect(x * pixel_size, y * pixel_size, pixel_size, pixel_size);
 }
 function drawPoint3d(ctx, p) {
-    var x = Math.round(p.x * (screen_dist / p.z));
-    var y = Math.round(p.y * (screen_dist / p.z));
+    var x = Math.round(p.x * (viewScreen.z / p.z));
+    var y = Math.round(p.y * (viewScreen.z / p.z));
     setPixel(ctx, x + PIXEL_WIDTH / 2, y + PIXEL_HEIGHT / 2);
 }
 function drawLine(ctx, p, q) {
@@ -172,10 +154,10 @@ function drawLine(ctx, p, q) {
     var _a;
 }
 function drawLine3d(ctx, p1, p2) {
-    var x1 = Math.round(p1.x * (screen_dist / p1.z));
-    var y1 = Math.round(p1.y * (screen_dist / p1.z));
-    var x2 = Math.round(p2.x * (screen_dist / p2.z));
-    var y2 = Math.round(p2.y * (screen_dist / p2.z));
+    var x1 = Math.round(p1.x * (viewScreen.z / p1.z));
+    var y1 = Math.round(p1.y * (viewScreen.z / p1.z));
+    var x2 = Math.round(p2.x * (viewScreen.z / p2.z));
+    var y2 = Math.round(p2.y * (viewScreen.z / p2.z));
     drawLine(ctx, { x: x1 + PIXEL_WIDTH / 2, y: y1 + PIXEL_HEIGHT / 2 }, { x: x2 + PIXEL_WIDTH / 2, y: y2 + PIXEL_HEIGHT / 2 });
 }
 function drawDemoLines(ctx) {
@@ -276,10 +258,10 @@ function dot(u, v) {
 }
 // clocationkwise from bottom right
 var screen_coords = [
-    new Point(PIXEL_WIDTH / 2, PIXEL_HEIGHT / 2, screen_dist),
-    new Point(-PIXEL_WIDTH / 2, PIXEL_HEIGHT / 2, screen_dist),
-    new Point(-PIXEL_WIDTH / 2, -PIXEL_HEIGHT / 2, screen_dist),
-    new Point(PIXEL_WIDTH / 2, -PIXEL_HEIGHT / 2, screen_dist),
+    new Point(PIXEL_WIDTH / 2, PIXEL_HEIGHT / 2, viewScreen.z),
+    new Point(-PIXEL_WIDTH / 2, PIXEL_HEIGHT / 2, viewScreen.z),
+    new Point(-PIXEL_WIDTH / 2, -PIXEL_HEIGHT / 2, viewScreen.z),
+    new Point(PIXEL_WIDTH / 2, -PIXEL_HEIGHT / 2, viewScreen.z),
 ];
 // cross product of two vectors in each plane
 var view_plane_normals = [

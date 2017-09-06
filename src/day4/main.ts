@@ -1,5 +1,5 @@
-var PIXEL_WIDTH  = 320
-var PIXEL_HEIGHT = 240
+var PIXEL_WIDTH  = 640
+var PIXEL_HEIGHT = 480
 
 var WIN_WIDTH  = window.innerWidth
 var WIN_HEIGHT = window.innerHeight
@@ -64,28 +64,10 @@ class Instance {
 }
 
 var objects: Instance[] = [
-  new Instance(cubeModel, new Point(0,    0,    400)),
-  new Instance(cubeModel, new Point(150,  0,    500)),
-  new Instance(cubeModel, new Point(-150, 0,    500)),
+  new Instance(cubeModel, new Point(0,    0,    500)),
+  new Instance(cubeModel, new Point(300,  0,    500)),
+  new Instance(cubeModel, new Point(-300, 0,    500)),
   new Instance(cubeModel, new Point(300,  -300, 500)),
-  new Instance(cubeModel, new Point(150,  -300, 500)),
-  new Instance(cubeModel, new Point(0,    -300, 500)),
-  new Instance(cubeModel, new Point(-150, -300, 500)),
-  new Instance(cubeModel, new Point(-300, -300, 500)),
-  new Instance(cubeModel, new Point(300,  -150, 500)),
-  new Instance(cubeModel, new Point(150,  -150, 500)),
-  new Instance(cubeModel, new Point(0,    -150, 500)),
-  new Instance(cubeModel, new Point(-150, -150, 500)),
-  new Instance(cubeModel, new Point(-300, -150, 500)),
-  new Instance(cubeModel, new Point(300,  +150, 500)),
-  new Instance(cubeModel, new Point(150,  +150, 500)),
-  new Instance(cubeModel, new Point(0,    +150, 500)),
-  new Instance(cubeModel, new Point(-150, +150, 500)),
-  new Instance(cubeModel, new Point(-300, +150, 500)),
-  new Instance(cubeModel, new Point(300,  +300, 500)),
-  new Instance(cubeModel, new Point(150,  +300, 500)),
-  new Instance(cubeModel, new Point(0,    +300, 500)),
-  new Instance(cubeModel, new Point(-150, +300, 500)),
   new Instance(cubeModel, new Point(-300, +300, 500)),
 ]
 
@@ -112,7 +94,7 @@ document.addEventListener('keyup', function(e) {
   if (keyName == "ArrowRight" || keyName == "Right") keyState.right = false
 })
 
-var screen_dist = 100
+var viewScreen = {x: 0, y: 0, z: 100, width: 160, height: 120}
 var transform = {x: 0, y: 0, z: 0}
 
 function setPixel(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -121,8 +103,8 @@ function setPixel(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 }
 
 function drawPoint3d(ctx: CanvasRenderingContext2D, p: Point): void {
-  var x = Math.round(p.x * (screen_dist / p.z))
-  var y = Math.round(p.y * (screen_dist / p.z))
+  var x = Math.round(p.x * (viewScreen.z / p.z))
+  var y = Math.round(p.y * (viewScreen.z / p.z))
   setPixel(ctx, x + PIXEL_WIDTH/2, y + PIXEL_HEIGHT/2)
 }
 
@@ -163,10 +145,10 @@ function drawLine(ctx: CanvasRenderingContext2D, p: Point2D, q: Point2D): void {
 }
 
 function drawLine3d(ctx: CanvasRenderingContext2D, p1: Point, p2: Point): void {
-  var x1 = Math.round(p1.x * (screen_dist / p1.z))
-  var y1 = Math.round(p1.y * (screen_dist / p1.z))
-  var x2 = Math.round(p2.x * (screen_dist / p2.z))
-  var y2 = Math.round(p2.y * (screen_dist / p2.z))
+  var x1 = Math.round(p1.x * (viewScreen.z / p1.z))
+  var y1 = Math.round(p1.y * (viewScreen.z / p1.z))
+  var x2 = Math.round(p2.x * (viewScreen.z / p2.z))
+  var y2 = Math.round(p2.y * (viewScreen.z / p2.z))
   drawLine(ctx, 
            {x:x1 + PIXEL_WIDTH/2, y:y1 + PIXEL_HEIGHT/2}, 
            {x:x2 + PIXEL_WIDTH/2, y:y2 + PIXEL_HEIGHT/2})
@@ -286,10 +268,10 @@ function dot(u: Vector, v: Vector): number {
 
 // clocationkwise from bottom right
 var screen_coords: Point[] = [
-  new Point( PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist), // bottom rt
-  new Point(-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, screen_dist), // bottom left
-  new Point(-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist), // top left
-  new Point( PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, screen_dist), // top right
+  new Point( PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, viewScreen.z), // bottom rt
+  new Point(-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, viewScreen.z), // bottom left
+  new Point(-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, viewScreen.z), // top left
+  new Point( PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, viewScreen.z), // top right
 ]
 
 // cross product of two vectors in each plane
