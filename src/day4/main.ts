@@ -1,5 +1,5 @@
-var PIXEL_WIDTH  = 640
-var PIXEL_HEIGHT = 480
+var PIXEL_WIDTH  = 320
+var PIXEL_HEIGHT = 240
 
 var WIN_WIDTH  = window.innerWidth
 var WIN_HEIGHT = window.innerHeight
@@ -13,6 +13,9 @@ canvas.width = PIXEL_WIDTH * pixel_size
 canvas.height = PIXEL_HEIGHT * pixel_size
 
 var ctx = canvas.getContext("2d")
+
+var viewScreen = {x: 0, y: 0, z: 100, width: 160, height: 120}
+var transform = {x: 0, y: 0, z: 0}
 
 class Point2D {
   constructor(public x: number, public y: number) {}
@@ -94,9 +97,6 @@ document.addEventListener('keyup', function(e) {
   if (keyName == "ArrowRight" || keyName == "Right") keyState.right = false
 })
 
-var viewScreen = {x: 0, y: 0, z: 100, width: 160, height: 120}
-var transform = {x: 0, y: 0, z: 0}
-
 function setPixel(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   if (x > 0 && x < PIXEL_WIDTH && y > 0 && y < PIXEL_HEIGHT)
     ctx.fillRect(x*pixel_size, y*pixel_size, pixel_size, pixel_size)
@@ -145,10 +145,10 @@ function drawLine(ctx: CanvasRenderingContext2D, p: Point2D, q: Point2D): void {
 }
 
 function drawLine3d(ctx: CanvasRenderingContext2D, p1: Point, p2: Point): void {
-  var x1 = Math.round(p1.x * (viewScreen.z / p1.z))
-  var y1 = Math.round(p1.y * (viewScreen.z / p1.z))
-  var x2 = Math.round(p2.x * (viewScreen.z / p2.z))
-  var y2 = Math.round(p2.y * (viewScreen.z / p2.z))
+  var x1 = Math.round(p1.x * (viewScreen.z / p1.z) * (PIXEL_WIDTH/viewScreen.width))
+  var y1 = Math.round(p1.y * (viewScreen.z / p1.z) * (PIXEL_WIDTH/viewScreen.width))
+  var x2 = Math.round(p2.x * (viewScreen.z / p2.z) * (PIXEL_HEIGHT/viewScreen.height))
+  var y2 = Math.round(p2.y * (viewScreen.z / p2.z) * (PIXEL_HEIGHT/viewScreen.height))
   drawLine(ctx, 
            {x:x1 + PIXEL_WIDTH/2, y:y1 + PIXEL_HEIGHT/2}, 
            {x:x2 + PIXEL_WIDTH/2, y:y2 + PIXEL_HEIGHT/2})
@@ -266,12 +266,12 @@ function dot(u: Vector, v: Vector): number {
   return u.x*v.x + u.y*v.y + u.z*v.z
 }
 
-// clocationkwise from bottom right
+// clockwise from bottom right
 var screen_coords: Point[] = [
-  new Point( PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, viewScreen.z), // bottom rt
-  new Point(-PIXEL_WIDTH/2,  PIXEL_HEIGHT/2, viewScreen.z), // bottom left
-  new Point(-PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, viewScreen.z), // top left
-  new Point( PIXEL_WIDTH/2, -PIXEL_HEIGHT/2, viewScreen.z), // top right
+  new Point(viewScreen.x + viewScreen.width/2, viewScreen.y + viewScreen.height/2, viewScreen.z), // bottom rt
+  new Point(viewScreen.x - viewScreen.width/2, viewScreen.y + viewScreen.height/2, viewScreen.z), // bottom left
+  new Point(viewScreen.x - viewScreen.width/2, viewScreen.y - viewScreen.height/2, viewScreen.z), // top left
+  new Point(viewScreen.x + viewScreen.width/2, viewScreen.y - viewScreen.height/2, viewScreen.z), // top right
 ]
 
 // cross product of two vectors in each plane
@@ -340,4 +340,3 @@ function linePlaneIntersection(p: Point, q: Point, n: Vector): Point {
     return null
   return new Point(p.x + t*v[0], p.y + t*v[1], p.z + t*v[2])
 }
-
