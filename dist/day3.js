@@ -9,14 +9,14 @@ var canvas = document.getElementById("canvas");
 canvas.width = PIXEL_WIDTH * pixel_size;
 canvas.height = PIXEL_HEIGHT * pixel_size;
 var ctx = canvas.getContext("2d");
-var Point2D = (function () {
+var Point2D = /** @class */ (function () {
     function Point2D(x, y) {
         this.x = x;
         this.y = y;
     }
     return Point2D;
 }());
-var Point = (function () {
+var Point = /** @class */ (function () {
     function Point(x, y, z) {
         this.x = x;
         this.y = y;
@@ -24,7 +24,7 @@ var Point = (function () {
     }
     return Point;
 }());
-var Vector = (function () {
+var Vector = /** @class */ (function () {
     function Vector(x, y, z) {
         this.x = x;
         this.y = y;
@@ -32,7 +32,7 @@ var Vector = (function () {
     }
     return Vector;
 }());
-var Model = (function () {
+var Model = /** @class */ (function () {
     function Model(vertices, edges) {
         this.vertices = vertices;
         this.edges = edges;
@@ -62,7 +62,7 @@ var cubeModel = new Model([
     [5, 7],
     [6, 7],
 ]);
-var Instance = (function () {
+var Instance = /** @class */ (function () {
     function Instance(model, location) {
         this.model = model;
         this.location = location;
